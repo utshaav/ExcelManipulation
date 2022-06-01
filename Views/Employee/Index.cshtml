@@ -1,8 +1,10 @@
 @{
   ViewData["Title"] = "Employee";
   int i = 0;
+  bool firstPage = Model.CurrentPage == 1;
+  bool lastPage = Model.Pages == Model.CurrentPage;
 }
-@model List<Employee>
+@model EmployeeResponse
 
 <div style="height:20px; width:100%; clear:both;"></div>
 
@@ -10,17 +12,20 @@
 <div class="container">
   <div class="row justify-content-between">
     <h3>List of Employee (@ViewBag.Count)</h3>
-    <div class="col-md-6">
+    @if (User.Identity.IsAuthenticated)
+    {
+      <div class="col-md-6">
         <button type="button" class="btn btn-primary w-100 m-b-10" id="add-btn">
-      Add Employee
-    </button>
-    </div>
-<div class="col-md-6 ">
-<button type="button" class="btn btn-success w-100 m-b-10" id="add-btn">
-      Import Excel or CSV
-    </button>
-</div>
-    
+          Add Employee
+        </button>
+      </div>
+      <div class="col-md-6 ">
+        <button type="button" class="btn btn-success w-100 m-b-10" id="import-file" onclick="importFile()">
+          Import Excel or CSV
+        </button>
+      </div>
+    }
+
   </div>
 </div>
 
@@ -40,7 +45,7 @@
   </thead>
   <tbody>
 
-    @foreach (var item in Model)
+    @foreach (var item in Model.Employees)
     {
       i++;
       <tr>
@@ -51,10 +56,12 @@
         <td onclick="viewDetail(@item.Id)">@item.Salary</td>
         <td onclick="viewDetail(@item.Id)">@item.DateOfBirth</td>
         <td scope="row">
-          <button style="width: 90px;" type="button" class="btn btn-primary" id="edit-btn" onclick="updateEmployee(@item.Id.ToString())">
+          <button style="width: 90px;" type="button" class="btn btn-primary" id="edit-btn"
+          onclick="updateEmployee('@item.Id')">
             Edit
           </button>
-          <button style="width: 90px;" type="button" class="btn btn-danger" onclick="deleteEmployee(@item.Id.ToString())" data-toggle="modal" data-target="#DeleteModal">
+          <button style="width: 90px;" type="button" class="btn btn-danger" onclick="deleteEmployee(@item.Id.ToString())"
+          data-toggle="modal" data-target="#DeleteModal">
             Delete
           </button>
         </td>
@@ -62,6 +69,24 @@
     }
   </tbody>
 </table>
+<nav aria-label="Page navigation">
+  <ul class="pagination">
+    <li class="page-item">
+      <a class="page-link" href="employee?page=@(Model.CurrentPage--)" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    @for (i = 1; i <= Model.Pages; i++)
+    {
+      <li class="page-item"><a class="page-link" href="employee?page=@i">@i</a></li>
+    }
+    <li class="page-item">
+      <a class="page-link" href="employee?page=@(Model.CurrentPage++)" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>
 
 
 <script src="~/lib/jquery/dist/jquery.js"></script>
@@ -91,7 +116,7 @@
     $('#exampleModalCenter').modal("hide");
 
     $.ajax({
-      url: "/Employee/update?id=" + id ,
+      url: "/Employee/update?id=" + id,
       success: function (res) {
         $('#modal-content').html(res);
         $('#exampleModalCenter').modal("show");
@@ -99,11 +124,29 @@
     })
   }
 
-  function deleteEmployee(id){
+  function importFile() {
+    debugger
+    $('#exampleModalCenter').modal("hide");
+
+    $.ajax({
+      url: "/Employee/ImportFile",
+      success: function (res) {
+        $('#modal-content').html(res);
+        $('#exampleModalCenter').modal("show");
+      },
+      error: function (e) {
+        if (e.status == 401) {
+          alert("You are not authorized to use this function");
+        }
+      }
+    })
+  }
+
+  function deleteEmployee(id) {
     debugger
     $('#exampleModalCenter').modal("hide");
     $.ajax({
-      url: "/Employee/delete?id=" + id ,
+      url: "/Employee/delete?id=" + id,
       success: function (res) {
         $('#modal-content').html(res);
         $('#exampleModalCenter').modal("show");
@@ -112,7 +155,7 @@
 
   }
 
-  function viewDetail(id){
+  function viewDetail(id) {
     window.location.href = "/Employee/detail/" + id;
   }
 
@@ -138,9 +181,9 @@
     <strong class="mr-auto">Bootstrap</strong>
     <small class="text-muted">11 mins ago</small>
     <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
+    <span aria-hidden="true">&times;</span>
     </button>
-  </div> *@
+    </div> *@
   <div class="toast-body">
     Employee deleted succesfully!
   </div>

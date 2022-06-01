@@ -1,4 +1,31 @@
-<form enctype="multipart/form-data" asp-action='ImportFile' asp-controller='Employee' method="post">
-    <input name="postedFile" type="file" accept=".xls,.xlsx,.csv"/>
-    <input type="submit" value="Submit File">
-</form>
+<div class="modal-content">
+  <div class="modal-header">
+    <h5 class="modal-title" id="exampleModalLongTitle">Import Excel/CSV</h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div id="modal-content" class="m-b-10">
+    <div class="container">
+      <div class="container p-10">
+        <form enctype="multipart/form-data" asp-action='ImportFile' asp-controller='Employee' method="post">
+            <div asp-validation-summary="ModelOnly">
+          <span class="text-danger">Please correct the following errors</span>
+        </div>
+          
+          <div class="form-group">
+            <label for="postedFile"></label>
+            <input name="postedFile" type="file" accept=".xls,.xlsx,.csv"/>
+          </div>
+          <button type="submit" class="btn btn-primary">Submit</button>
+
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" asp-controller="Employee" asp-action="Index">Close</button>
+
+        </form>
+      </div>
+    </div>
+    <div class="modal-footer">
+      @* <button type="submit" class="btn btn-primary">Save changes</button> *@
+    </div>
+  </div>
+ </div>

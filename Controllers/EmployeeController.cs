@@ -1,5 +1,6 @@
 using ExcelManipulation.Models;
 using ExcelManipulation.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExcelManipulation.Controllers;
@@ -15,17 +16,19 @@ public class EmployeeController : Controller
     }
 
     [HttpGet]
-    public IActionResult Index()
+    public async Task<IActionResult> Index(int? page)
     {
-        var employees = _employeeDB.GetAllEmployees();
-        ViewBag.Count = employees.Count;
+        int pageNo = page??1;
+        var employees = await _employeeDB.GetAllEmployees(pageNo);
+        ViewBag.Count = employees.Employees.Count;
         return View(employees);
     }
 
     [HttpGet]
+    [Authorize]
     public IActionResult ImportFile()
     {
-        return View();
+        return PartialView();
     }
 
     [HttpPost]
@@ -33,12 +36,24 @@ public class EmployeeController : Controller
     {
         ExcelParseResult result = _dataManipulation.ParseExcel(postedFile);
         _employeeDB.AddEmployee(result.Employees);
-        return View();
+        return RedirectToAction("Index");
     }
 
 
     [HttpGet]
-    public void ClearEmployeeTable(){
+    public IActionResult ClearEmployeeTable(){
         _employeeDB.DeleteAllEmployees();
+        return RedirectToAction("Index");
+    }
+
+    [HttpGet]
+    public IActionResult Update(Guid Id){
+        var employee = _employeeDB.GetEmployee(Id);
+        return PartialView(employee);
+    }
+    [HttpPost]
+    public IActionResult Update(Employee employe){
+        _employeeDB.UpdateEmployee(employe);
+        return RedirectToAction("Index");
     }
 }

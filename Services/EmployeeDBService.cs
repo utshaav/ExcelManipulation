@@ -1,5 +1,6 @@
 using ExcelManipulation.Data;
 using ExcelManipulation.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace ExcelManipulation.Services;
 
@@ -17,9 +18,19 @@ public class EmployeeDBService : IEmployeeDBService
         return employee!;
     }
 
-    public List<Employee> GetAllEmployees()
+    public async Task<EmployeeResponse> GetAllEmployees(int page = 0)
     {
-        return _dbContext.Employees.ToList();
+        var pageResult = 10f;
+        var pageCount = Math.Ceiling(_dbContext.Employees.Count() / pageResult);
+        var employees = await _dbContext.Employees
+            .Skip((page-1)*(int)pageResult)
+            .Take((int)pageResult)
+            .ToListAsync();
+        return new EmployeeResponse{
+            CurrentPage = page,
+            Pages = (int)pageCount,
+            Employees = employees
+        };
     }
 
     public async Task<int> AddEmployee(Employee employee)
@@ -56,12 +67,13 @@ public class EmployeeDBService : IEmployeeDBService
     {
         var employee = _dbContext.Employees.Where(x => x.Id == employeeId).FirstOrDefault();
         _dbContext.Employees.Remove(employee!);
+        _dbContext.SaveChanges();
     }
 
     public void DeleteAllEmployees()
     {
         var employees = _dbContext.Employees.ToList();
         _dbContext.Employees.RemoveRange(employees);
+        _dbContext.SaveChanges();
     }
-
 }

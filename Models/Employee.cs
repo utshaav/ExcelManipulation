@@ -15,4 +15,5 @@ public class Employee{
     public DateTime DateOfBirth { get; set; }
     [Required]
     public string Gender { get; set; }
+    public DateTime ImportedDate { get; set; } = DateTime.Now;
 }
