@@ -1,0 +1,147 @@
+@{
+  ViewData["Title"] = "Employee";
+  int i = 0;
+}
+@model List<Employee>
+
+<div style="height:20px; width:100%; clear:both;"></div>
+
+
+<div class="container">
+  <div class="row justify-content-between">
+    <h3>List of Employee (@ViewBag.Count)</h3>
+    <div class="col-md-6">
+        <button type="button" class="btn btn-primary w-100 m-b-10" id="add-btn">
+      Add Employee
+    </button>
+    </div>
+<div class="col-md-6 ">
+<button type="button" class="btn btn-success w-100 m-b-10" id="add-btn">
+      Import Excel or CSV
+    </button>
+</div>
+    
+  </div>
+</div>
+
+<div style="height:30px; width:100%; clear:both;"></div>
+
+<table class="table table-hover m-t-20">
+  <thead class="thead-light">
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Name</th>
+      <th scope="col">Gender</th>
+      <th scope="col">Designation</th>
+      <th scope="col">Salary</th>
+      <th scope="col">Date Of Birth</th>
+      <th scope="col">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    @foreach (var item in Model)
+    {
+      i++;
+      <tr>
+        <th scope="row" onclick="viewDetail(@item.Id)">@i</th>
+        <td onclick="viewDetail(@item.Id)">@item.FullName</td>
+        <td onclick="viewDetail(@item.Id)">@item.Gender</td>
+        <td onclick="viewDetail(@item.Id)">@item.Designation</td>
+        <td onclick="viewDetail(@item.Id)">@item.Salary</td>
+        <td onclick="viewDetail(@item.Id)">@item.DateOfBirth</td>
+        <td scope="row">
+          <button style="width: 90px;" type="button" class="btn btn-primary" id="edit-btn" onclick="updateEmployee(@item.Id.ToString())">
+            Edit
+          </button>
+          <button style="width: 90px;" type="button" class="btn btn-danger" onclick="deleteEmployee(@item.Id.ToString())" data-toggle="modal" data-target="#DeleteModal">
+            Delete
+          </button>
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>
+
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+@* <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.jquery.validation.unobtrusive.min.js"></script>
+  <script src="~/lib/jquery/dist/jquery.js"></script>
+  <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script> *@
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+<script>
+  $('#add-btn').click(function () {
+    debugger
+    $('#exampleModalCenter').modal("hide");
+
+    $.ajax({
+      url: "/Employee/add",
+      success: function (res) {
+        $('#modal-content').html(res);
+        $('#exampleModalCenter').modal("show");
+      }
+    })
+  });
+
+  function updateEmployee(id) {
+    debugger
+    $('#exampleModalCenter').modal("hide");
+
+    $.ajax({
+      url: "/Employee/update?id=" + id ,
+      success: function (res) {
+        $('#modal-content').html(res);
+        $('#exampleModalCenter').modal("show");
+      }
+    })
+  }
+
+  function deleteEmployee(id){
+    debugger
+    $('#exampleModalCenter').modal("hide");
+    $.ajax({
+      url: "/Employee/delete?id=" + id ,
+      success: function (res) {
+        $('#modal-content').html(res);
+        $('#exampleModalCenter').modal("show");
+      }
+    })
+
+  }
+
+  function viewDetail(id){
+    window.location.href = "/Employee/detail/" + id;
+  }
+
+
+</script>
+
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" id="modal-content" role="document">
+
+  </div>
+</div>
+
+<!-- Toast -->
+
+<div id="delete-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+  @* <div class="toast-header">
+    <img src="..." class="rounded mr-2" alt="...">
+    <strong class="mr-auto">Bootstrap</strong>
+    <small class="text-muted">11 mins ago</small>
+    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div> *@
+  <div class="toast-body">
+    Employee deleted succesfully!
+  </div>
+</div>
