@@ -12,7 +12,6 @@ public class EmployeeController : Controller
     {
         _employeeDB = employeeDB;
         _dataManipulation = dataManipulation;
-
     }
 
     [HttpGet]
@@ -32,10 +31,13 @@ public class EmployeeController : Controller
     }
 
     [HttpPost]
-    public IActionResult ImportFile([FromForm] IFormFile postedFile)
+    public async Task<IActionResult> ImportFile([FromForm] IFormFile postedFile)
     {
-        ExcelParseResult result = _dataManipulation.ParseExcel(postedFile);
-        _employeeDB.AddEmployee(result.Employees);
+        
+        ExcelParseResult result = postedFile.FileName.Contains(".csv")
+                ? await _dataManipulation.ParseCsvAsync(postedFile) 
+                : _dataManipulation.ParseExcel(postedFile);
+        await _employeeDB.AddEmployee(result.Employees);
         return RedirectToAction("Index");
     }
 

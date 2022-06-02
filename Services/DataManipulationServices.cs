@@ -1,6 +1,9 @@
 using System.Globalization;
+using System.Text;
 using ExcelManipulation.Models;
 using OfficeOpenXml;
+using CsvHelper;
+using CsvHelper.Configuration;
 
 namespace ExcelManipulation.Services;
 
@@ -45,6 +48,48 @@ public class DataManipulationService : IDataManipulationService
         }
         return new ExcelParseResult { Employees = employees, EmptyRows = emptyRows };
     }
+
+    public async Task<ExcelParseResult> ParseCsvAsync(IFormFile file)
+    {
+        using var memoryStream = new MemoryStream(new byte[file.Length]);
+        await file.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;
+
+        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            HeaderValidated = null,
+            MissingFieldFound = null
+        };
+
+        using (var reader = new StreamReader(memoryStream))
+        using (var csvReader = new CsvReader(reader, config))
+        {
+            List<Employee> list = new();
+            csvReader.Read();
+            var records = csvReader.GetRecords<Employee>();
+            Console.WriteLine(records);
+            foreach (var record in records)
+            {
+                Console.WriteLine(record);
+                // if(record == null) continue;
+                // Employee emp = new Employee{
+                //     DateOfBirth = record.DateOfBirth,
+                //     FullName = record.FullName,
+                //     Salary = record.Salary,
+                //     Gender = record.Gender,
+                //     Designation = record.Designation
+                // };
+                // list.Add(emp);
+            }
+            return new ExcelParseResult{
+                Employees = list,
+                EmptyRows = new List<int>()
+            };
+        }
+
+        return new ExcelParseResult();
+    }
+
     public byte[] ExcelExport(List<string> excel_row, List<string> excel_column)
     {
         List<Employee> employees = new();
@@ -80,7 +125,7 @@ public class DataManipulationService : IDataManipulationService
                     worksheet.Cells[i + 2, 4].Value = employees[i].Salary;
                     worksheet.Cells[i + 2, 5].Value = employees[i].DateOfBirth;
                     worksheet.Cells[i + 2, 5].Style.Numberformat.Format = DateTimeFormatInfo.CurrentInfo.ShortDatePattern;
-                            
+
                 }
             }
 
