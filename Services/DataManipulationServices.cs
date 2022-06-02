@@ -27,22 +27,43 @@ public class DataManipulationService : IDataManipulationService
                 //loop all rows
                 for (int i = 2; i <= worksheet.Dimension.End.Row; i++)
                 {
-                    var columnEnd = worksheet.Cells.End.Column;
-                    var cellRange = worksheet.Cells[i, 1, i, columnEnd];
-                    var isRowEmpty = cellRange.All(c => c.Value == null);
-                    if (isRowEmpty)
+                    try
                     {
-                        emptyRows.Add(i);
-                        continue;
+                        var columnEnd = worksheet.Cells.End.Column;
+                        var cellRange = worksheet.Cells[i, 1, i, columnEnd];
+                        var isRowEmpty = cellRange.All(c => c.Value == null);
+                        if (isRowEmpty)
+                        {
+                            emptyRows.Add(i);
+                            continue;
+                        }
+                        bool isCellEmpty = cellRange.Any(c => c.Value == null);
+                        if (isCellEmpty)
+                            throw new Exception($"Import failed because row {i} have a empty cell.");
+                            // return new ExcelParseResult
+                            // {
+                            //     Success = false,
+                            //     ErrorMessage = $"Import failed because row {i} have a empty cell."
+                            // };
+
+                        var employee = new Employee();
+                        var date = worksheet.Cells[i, 5].GetValue<DateTime>();
+                        employee.FullName = worksheet.Cells[i, 1].GetValue<string>();
+                        employee.Gender = worksheet.Cells[i, 2].GetValue<string>();
+                        employee.Designation = worksheet.Cells[i, 3].GetValue<string>();
+                        employee.Salary = worksheet.Cells[i, 4].GetValue<float>();
+                        employee.DateOfBirth = worksheet.Cells[i, 5].GetValue<DateTime>();
+                        employees.Add(employee);
                     }
-                    var employee = new Employee();
-                    var date = worksheet.Cells[i, 5].GetValue<DateTime>();
-                    employee.FullName = worksheet.Cells[i, 1].GetValue<string>();
-                    employee.Gender = worksheet.Cells[i, 2].GetValue<string>();
-                    employee.Designation = worksheet.Cells[i, 3].GetValue<string>();
-                    employee.Salary = worksheet.Cells[i, 4].GetValue<float>();
-                    employee.DateOfBirth = worksheet.Cells[i, 5].GetValue<DateTime>();
-                    employees.Add(employee);
+                    catch (Exception e)
+                    {
+                        return new ExcelParseResult
+                        {
+                            Success = false,
+                            ErrorMessage = e.Message,
+                            EmptyRows = emptyRows
+                        };
+                    }
                 }
             }
         }
@@ -81,7 +102,8 @@ public class DataManipulationService : IDataManipulationService
                 // };
                 // list.Add(emp);
             }
-            return new ExcelParseResult{
+            return new ExcelParseResult
+            {
                 Employees = list,
                 EmptyRows = new List<int>()
             };

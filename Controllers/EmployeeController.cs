@@ -15,8 +15,13 @@ public class EmployeeController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(int? page)
+    public async Task<IActionResult> Index(int? page, bool redirected = false)
     {
+        if (redirected && TempData["Message"] != null)
+        {
+            ViewBag.Message = TempData["Message"]!.ToString();
+        }
+        ViewBag.Redirected = redirected;
         int pageNo = page ??= 1;
         var employees = await _employeeDB.GetAllEmployees(pageNo);
         ViewBag.Count = employees.Employees.Count;
@@ -33,12 +38,31 @@ public class EmployeeController : Controller
     [HttpPost]
     public async Task<IActionResult> ImportFile([FromForm] IFormFile postedFile)
     {
-        
+        string message = string.Empty;
         ExcelParseResult result = postedFile.FileName.Contains(".csv")
-                ? await _dataManipulation.ParseCsvAsync(postedFile) 
+                ? await _dataManipulation.ParseCsvAsync(postedFile)
                 : _dataManipulation.ParseExcel(postedFile);
-        await _employeeDB.AddEmployee(result.Employees);
-        return RedirectToAction("Index");
+
+        if (result.Success)
+        {
+            await _employeeDB.AddEmployee(result.Employees);
+            message = "Excel imported succesfully.";
+            if (result.EmptyRows.Count > 0)
+            {
+                message += "These rows were empty :";
+                foreach (int i in result.EmptyRows)
+                {
+                    message += $" {i},";
+                }
+            }
+        }
+        else
+        {
+            message += "Failed to import your file.";
+            message += result.ErrorMessage;
+        }
+        TempData["Message"] = message;
+        return RedirectToAction("Index", new { page = 1, redirected = true });
     }
 
 
@@ -59,13 +83,29 @@ public class EmployeeController : Controller
     public IActionResult Update(Employee employe)
     {
         _employeeDB.UpdateEmployee(employe);
-        return RedirectToAction("Index");
+        TempData["Message"] = $"{employe.FullName} updated succesfully";
+        return RedirectToAction("Index", new { redirected = true });
     }
     [HttpPost]
     public FileResult Download(List<string> excel_row, List<string> excel_column)
     {
-        byte[] fileBytes = _dataManipulation.ExcelExport(excel_row,excel_column);
+        byte[] fileBytes = _dataManipulation.ExcelExport(excel_row, excel_column);
         string fileName = "myfile.xlsx";
         return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
+    }
+
+    [HttpGet]
+    public IActionResult Delete(Guid id)
+    {
+        var employee = _employeeDB.GetEmployee(id);
+        return PartialView(employee);
+    }
+
+    [HttpPost]
+    public IActionResult ConfirmDelete(Guid id)
+    {
+        _employeeDB.DeleteEmployee(id);
+        TempData["Message"] = "Deleted Succesfully";
+        return RedirectToAction("Index", new { redirected = true });
     }
 }
