@@ -33,6 +33,12 @@ public class EmployeeDBService : IEmployeeDBService
         };
     }
 
+    public List<Employee> GetAllEmployees()
+    {
+        var employees =  _dbContext.Employees.ToList();
+        return employees;
+    }
+
     public async Task<int> AddEmployee(Employee employee)
     {
         // _dbContext.Employees.Attach(employee);

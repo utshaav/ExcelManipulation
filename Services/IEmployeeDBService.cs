@@ -9,6 +9,7 @@ public interface IEmployeeDBService
     void DeleteEmployee(Guid employeeId);
     void DeleteAllEmployees();
     Task<EmployeeResponse> GetAllEmployees(int page);
+    List<Employee> GetAllEmployees();
     Employee GetEmployee(Guid employeeId);
     Task<int> UpdateEmployee(Employee employee);
 }

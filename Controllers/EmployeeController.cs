@@ -18,7 +18,7 @@ public class EmployeeController : Controller
     [HttpGet]
     public async Task<IActionResult> Index(int? page)
     {
-        int pageNo = page??1;
+        int pageNo = page ??= 1;
         var employees = await _employeeDB.GetAllEmployees(pageNo);
         ViewBag.Count = employees.Employees.Count;
         return View(employees);
@@ -41,19 +41,29 @@ public class EmployeeController : Controller
 
 
     [HttpGet]
-    public IActionResult ClearEmployeeTable(){
+    public IActionResult ClearEmployeeTable()
+    {
         _employeeDB.DeleteAllEmployees();
         return RedirectToAction("Index");
     }
 
     [HttpGet]
-    public IActionResult Update(Guid Id){
+    public IActionResult Update(Guid Id)
+    {
         var employee = _employeeDB.GetEmployee(Id);
         return PartialView(employee);
     }
     [HttpPost]
-    public IActionResult Update(Employee employe){
+    public IActionResult Update(Employee employe)
+    {
         _employeeDB.UpdateEmployee(employe);
         return RedirectToAction("Index");
+    }
+    [HttpPost]
+    public FileResult Download(List<string> excel_row, List<string> excel_column)
+    {
+        byte[] fileBytes = _dataManipulation.ExcelExport(excel_row,excel_column);
+        string fileName = "myfile.xlsx";
+        return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
     }
 }
