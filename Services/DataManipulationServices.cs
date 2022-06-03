@@ -2,8 +2,10 @@ using System.Globalization;
 using System.Text;
 using ExcelManipulation.Models;
 using OfficeOpenXml;
-using CsvHelper;
-using CsvHelper.Configuration;
+// using CsvHelper;
+// using CsvHelper.Configuration;
+using TinyCsvParser;
+using TinyCsvParser.Mapping;
 
 namespace ExcelManipulation.Services;
 
@@ -40,11 +42,11 @@ public class DataManipulationService : IDataManipulationService
                         bool isCellEmpty = cellRange.Any(c => c.Value == null);
                         if (isCellEmpty)
                             throw new Exception($"Import failed because row {i} have a empty cell.");
-                            // return new ExcelParseResult
-                            // {
-                            //     Success = false,
-                            //     ErrorMessage = $"Import failed because row {i} have a empty cell."
-                            // };
+                        // return new ExcelParseResult
+                        // {
+                        //     Success = false,
+                        //     ErrorMessage = $"Import failed because row {i} have a empty cell."
+                        // };
 
                         var employee = new Employee();
                         var date = worksheet.Cells[i, 5].GetValue<DateTime>();
@@ -71,47 +73,45 @@ public class DataManipulationService : IDataManipulationService
         return new ExcelParseResult { Employees = employees, EmptyRows = emptyRows };
     }
 
-    public async Task<ExcelParseResult> ParseCsvAsync(IFormFile file)
-    {
-        using var memoryStream = new MemoryStream(new byte[file.Length]);
-        await file.CopyToAsync(memoryStream);
-        memoryStream.Position = 0;
+    // public async Task<ExcelParseResult> ParseCsvAsync(IFormFile file)
+    // {
+    //     // using var memoryStream = new MemoryStream(new byte[file.Length]);
+    //     // await file.CopyToAsync(memoryStream);
+    //     // memoryStream.Position = -1;
 
-        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
-        {
-            HeaderValidated = null,
-            MissingFieldFound = null
-        };
+    //     using (var reader = new StreamReader(file.OpenReadStream()))
+    //     using (var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture))
+    //     {
+    //         List<Employee> list = new();
+    //         csvReader.Read();
+    //         var records = csvReader.GetRecords<dynamic>().ToList();
+    //         Console.WriteLine(records);
+    //         foreach (var record in records)
+    //         {
+    //             Console.WriteLine(record);
+    //             foreach(var furtherRecord in record){
 
-        using (var reader = new StreamReader(memoryStream))
-        using (var csvReader = new CsvReader(reader, config))
-        {
-            List<Employee> list = new();
-            csvReader.Read();
-            var records = csvReader.GetRecords<Employee>();
-            Console.WriteLine(records);
-            foreach (var record in records)
-            {
-                Console.WriteLine(record);
-                // if(record == null) continue;
-                // Employee emp = new Employee{
-                //     DateOfBirth = record.DateOfBirth,
-                //     FullName = record.FullName,
-                //     Salary = record.Salary,
-                //     Gender = record.Gender,
-                //     Designation = record.Designation
-                // };
-                // list.Add(emp);
-            }
-            return new ExcelParseResult
-            {
-                Employees = list,
-                EmptyRows = new List<int>()
-            };
-        }
+    //             }
+    //             // if(record == null) continue;
+    //             // Employee emp = new Employee{
+    //             //     DateOfBirth = record.DateOfBirth,
+    //             //     FullName = record.FullName,
+    //             //     Salary = record.Salary,
+    //             //     Gender = record.Gender,
+    //             //     Designation = record.Designation
+    //             // };
+    //             // list.Add(emp);
+    //         }
+    //         return new ExcelParseResult
+    //         {
+    //             Employees = list,
+    //             EmptyRows = new List<int>()
+    //         };
+    //     }
 
-        return new ExcelParseResult();
-    }
+    //     return new ExcelParseResult();
+    // }
+
 
     public byte[] ExcelExport(List<string> excel_row, List<string> excel_column)
     {
@@ -201,5 +201,64 @@ public class DataManipulationService : IDataManipulationService
             byte[] bin = excelPackage.GetAsByteArray();
             return bin;
         }
+    }
+
+    public async Task<ExcelParseResult> ParseCsvAsync(IFormFile file)
+    {
+        CsvParserOptions csvParserOptions = new CsvParserOptions(true, ',');
+        List<Employee> employees = new List<Employee>();
+        CsvEmployeeMapping csvMapper = new CsvEmployeeMapping();
+        CsvParser<EmployeeMappingHelper> csvParser = new CsvParser<EmployeeMappingHelper>(csvParserOptions, csvMapper);
+        var result = csvParser
+                     .ReadFromStream(file.OpenReadStream(),Encoding.ASCII)
+                     .ToList();
+
+        Console.WriteLine("Name " + "ID   " + "City  " + "Country");
+        foreach (var details in result)
+        {
+            if (details.IsValid)
+            {
+                DateTime dob =  DateTime.Parse(details.Result.DOB, CultureInfo.InvariantCulture);
+                Console.WriteLine(dob);
+                Employee employee = new Employee{
+                    Salary = details.Result.Salary,
+                    Designation = details.Result.Designation,
+                    FullName = details.Result.FullName,
+                    Gender = details.Result.Gender,
+                    DateOfBirth = dob
+                };
+                employees.Add(employee);
+            }
+            else{
+                if (details.RowIndex != 1)
+                {
+                    return new ExcelParseResult {
+                        Success = false,
+                        ErrorMessage = details.Error.Value,
+                    };
+                }
+            }
+        }
+
+        return new ExcelParseResult { Employees = employees, EmptyRows = new List<int>() };
+    }
+
+    private class CsvEmployeeMapping : CsvMapping<EmployeeMappingHelper>
+    {
+        public CsvEmployeeMapping()
+            : base()
+        {
+            MapProperty(0, x => x.FullName);
+            MapProperty(1, x => x.Designation);
+            MapProperty(2, x => x.Gender);
+            MapProperty(3, x => x.Salary);
+            MapProperty(4, x => x.DOB);
+
+        }
+    }
+
+    private class EmployeeMappingHelper : Employee
+    {
+        public string DOB { get; set; }
     }
 }
