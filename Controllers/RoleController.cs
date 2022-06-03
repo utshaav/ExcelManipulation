@@ -8,8 +8,10 @@ public class RoleController : Controller
 {
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly UserManager<IdentityUser> _userManager;
-    public RoleController(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager)
+    private readonly SignInManager<IdentityUser> _signInManager;
+    public RoleController(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
     {
+        _signInManager = signInManager;
         _userManager = userManager;
         _roleManager = roleManager;
 
@@ -26,18 +28,27 @@ public class RoleController : Controller
         return "Roles are already initialized";
     }
 
-    public async Task ChangeRole()
+    public async Task<string> ChangeRole()
     {
-        var user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var user = await _userManager.FindByIdAsync(userId);
+        string message = string.Empty;
         if (await _userManager.IsInRoleAsync(user, Roles.Admin.ToString()))
         {
             await _userManager.RemoveFromRoleAsync(user, Roles.Admin.ToString());
+            
+            message =  "Your role is default!";
         }
         else
         {
             await _userManager.AddToRoleAsync(user, Roles.Admin.ToString());
+            message =  "Your role is Admin!";
         }
+
+        await _signInManager.RefreshSignInAsync(user);
+        return message;
     }
+
 
     public async Task<String> AddToDefault()
     {

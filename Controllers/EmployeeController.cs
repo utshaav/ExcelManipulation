@@ -45,13 +45,14 @@ public class EmployeeController : Controller
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public IActionResult ImportFile()
     {
         return PartialView();
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> ImportFile([FromForm] IFormFile postedFile)
     {
         string message = string.Empty;
