@@ -63,7 +63,7 @@ public class EmployeeController : Controller
         if (result.Success)
         {
             await _employeeDB.AddEmployee(result.Employees);
-            message = "Excel imported succesfully.";
+            message = "Imported succesfully.";
             if (result.EmptyRows.Count > 0)
             {
                 message += "These rows were empty :";
@@ -103,11 +103,18 @@ public class EmployeeController : Controller
         TempData["Message"] = $"{employe.FullName} updated succesfully";
         return RedirectToAction("Index", new { redirected = true });
     }
+    [HttpGet]
+    public IActionResult ExportChoice(){
+        List<string> options = new List<string>{"excel", "csv", "pdf"};
+        return PartialView(options);
+    }
+
     [HttpPost]
     public FileResult Download(List<string> excel_row, List<string> excel_column)
     {
         byte[] fileBytes = _dataManipulation.ExcelExport(excel_row, excel_column);
         string fileName = "myfile.xlsx";
+        // string fileName = "myfile.csv";
         return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
     }
 
@@ -125,4 +132,6 @@ public class EmployeeController : Controller
         TempData["Message"] = "Deleted Succesfully";
         return RedirectToAction("Index", new { redirected = true });
     }
+
+
 }
