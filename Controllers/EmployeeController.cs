@@ -1,6 +1,9 @@
+using System.Security.Claims;
+using ExcelManipulation.Enums;
 using ExcelManipulation.Models;
 using ExcelManipulation.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExcelManipulation.Controllers;
@@ -8,15 +11,28 @@ public class EmployeeController : Controller
 {
     private readonly IDataManipulationService _dataManipulation;
     private readonly IEmployeeDBService _employeeDB;
-    public EmployeeController(IDataManipulationService dataManipulation, IEmployeeDBService employeeDB)
+    private readonly RoleManager<IdentityRole> _roleManager;
+    public EmployeeController(IDataManipulationService dataManipulation, IEmployeeDBService employeeDB, RoleManager<IdentityRole> roleManager)
     {
+        _roleManager = roleManager;
         _employeeDB = employeeDB;
         _dataManipulation = dataManipulation;
     }
 
+    // public async Task CreateRole()
+    // {
+    //     if (!await _roleManager.RoleExistsAsync(Roles.Admin.ToString()))
+    //     {
+    //         await _roleManager.CreateAsync(new IdentityRole(Roles.Admin.ToString()));
+    //         await _roleManager.CreateAsync(new IdentityRole(Roles.Default.ToString()));
+
+    //     }
+    // }
+
     [HttpGet]
     public async Task<IActionResult> Index(int? page, bool redirected = false)
     {
+        Console.WriteLine(User.FindFirstValue(ClaimTypes.NameIdentifier));
         if (redirected && TempData["Message"] != null)
         {
             ViewBag.Message = TempData["Message"]!.ToString();

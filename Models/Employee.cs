@@ -16,4 +16,5 @@ public class Employee{
     [Required]
     public string Gender { get; set; }
     public DateTime ImportedDate { get; set; } = DateTime.Now;
+    public Guid ImportedBy { get; set; }
 }
