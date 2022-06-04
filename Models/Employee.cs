@@ -10,6 +10,10 @@ public class Employee{
     [Required]
     public string FullName { get; set; }
 
+     [Required]
+    public string Gender { get; set; }
+
+    
     [Required]
     public string Designation { get; set; }
 
@@ -19,8 +23,6 @@ public class Employee{
     [Required]
     public DateTime DateOfBirth { get; set; }
 
-    [Required]
-    public string Gender { get; set; }
     public DateTime ImportedDate { get; set; } = DateTime.Now;
     public Guid ImportedBy { get; set; }
 }
