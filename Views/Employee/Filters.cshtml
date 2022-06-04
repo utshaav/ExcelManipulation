@@ -1,0 +1,79 @@
+<div class="" >
+    <h4>Filters <span><button type="button" onclick="toggleFilter(this)" class="btn btn-outline-info" vw-5 p-3 id="filter_toggle"><span>[+]</span>  </button></span></h4>
+    <div class="row" id="filter" style="display: none;">
+    <div class="col-md-3">
+        <div class="form-group">
+            <label for="EmployeeName">Name</label>
+            <input name="EmployeeName" type="text" class="form-control w-100" placeholder="Enter Name">
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label for="StartDate">Start Date</label>
+            <input name="StartDate" type="date" class="form-control w-100">
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label for="EndDate">End Date</label>
+            <input name="EndDate" type="date" class="form-control w-100">
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label for="Gender">Gender</label>
+            <input name="Gender" type="text" class="form-control w-100" placeholder="Male or Female">
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label for="StartSalary">Salary Range From</label>
+            <input name="StartSalary" type="number" class="form-control w-100" placeholder="50000">
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label for="EndSalary">Salary Range to</label>
+            <input name="EndSalary" type="number" class="form-control w-100" placeholder="90000">
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label for="ImportedBy">Imported By</label>
+            <select  class="form-select" name="ImportedBy">
+                <option selected>Select importer</option>
+                <option>Utsav Kuinkel</option>
+                <option>Upasana Kuinkel</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group p-3">
+            <button class="btn btn-info w-100" type="button">Search</button>
+        </div>
+    </div>
+    </div>
+</div>
+
+<script>
+    function toggleFilter(e){
+        debugger
+        var value = e.innerText;
+        if(value == "[+]"){
+            e.innerText = " [-] "
+        }else{
+            e.innerText = " [+] "
+        }
+        $("#filter").toggle();
+    }
+    //$('#filter_toggle').click(finction (e){
+    //    debugger;
+    //    $("#filter").toggle();
+    //    if($(e).html().trim() == "[+]"){
+    //        $(e).html("[-]");
+    //    }
+    //    else{
+    //        $(e).html("[+]");
+    //    }
+    //})
+</script>
