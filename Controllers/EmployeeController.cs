@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExcelManipulation.Controllers;
+[Authorize]
 public class EmployeeController : Controller
 {
     private readonly IDataManipulationService _dataManipulation;
