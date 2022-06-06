@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using CsvHelper;
 using ExcelManipulation.Models;
 using OfficeOpenXml;
 // using CsvHelper;
@@ -113,7 +114,7 @@ public class DataManipulationService : IDataManipulationService
     // }
 
 
-    public byte[] ExcelExport(List<string> excel_row, List<string> excel_column)
+    public Export ExcelExport(List<string> excel_row, List<string> excel_column)
     {
         List<Employee> employees = new();
         if (excel_row.Count == 0)
@@ -199,18 +200,104 @@ public class DataManipulationService : IDataManipulationService
 
             //convert the excel package to a byte array
             byte[] bin = excelPackage.GetAsByteArray();
-            return bin;
+            return new Export{
+                Success = true,
+                File = bin,
+                Extension = ".xlsx"
+            };
         }
     }
 
-    public async Task<ExcelParseResult> ParseCsvAsync(IFormFile file)
+    public Export CsvExport(List<string> excel_row, List<string> excel_column)
+    {
+        List<Employee> employees = new();
+        byte[] file;
+        if (excel_row.Count == 0)
+        {
+            employees = _employeeDb.GetAllEmployees();
+        }
+        else
+        {
+            foreach (var item in excel_row)
+            {
+                employees.Add(_employeeDb.GetEmployee(Guid.Parse(item)));
+            }
+        }
+        using (var memoryStream = new MemoryStream())
+        {
+            using (TextWriter streamWriter = new StreamWriter(memoryStream))
+            using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
+            {
+                if (excel_column.Count == 0)
+                {
+                    csvWriter.WriteField("Full Name");
+                    csvWriter.WriteField("Designation");
+                    csvWriter.WriteField("Gender");
+                    csvWriter.WriteField("Salary");
+                    csvWriter.WriteField("Date of birth");
+                    csvWriter.NextRecord();
+
+                    for (int i = 0; i < employees.Count; i++)
+                    {
+                        csvWriter.WriteField(employees[i].FullName);
+                        csvWriter.WriteField(employees[i].Designation);
+                        csvWriter.WriteField(employees[i].Gender);
+                        csvWriter.WriteField(employees[i].Salary);
+                        csvWriter.WriteField(employees[i].DateOfBirth);
+                        csvWriter.NextRecord();
+
+                    }
+                }
+                else
+                {
+                    int i = 0;
+                    Employee dummyObj = new Employee();
+                    foreach (var prop in dummyObj.GetType().GetProperties())
+                    {
+                        if (excel_column.Contains(prop.Name))
+                        {
+                            csvWriter.WriteField(prop.Name);
+                            i++;
+                        }
+                    }
+                    csvWriter.NextRecord();
+
+                    int k = 0;
+                    foreach (var employee in employees)
+                    {
+                        int l = 0;
+                        foreach (var prop in employee.GetType().GetProperties())
+                        {
+                            if (excel_column.Contains(prop.Name))
+                            {
+                                csvWriter.WriteField(prop.GetValue(employee));
+                                l++;
+                            }
+                        }
+                        csvWriter.NextRecord();
+                        k++;
+                    }
+
+                }
+            } // StreamWriter gets flushed here.
+
+            file = memoryStream.ToArray();
+        }
+        return new Export{
+            Success = true,
+            File = file,
+            Extension = ".csv"
+        };
+    }
+
+    public ExcelParseResult ParseCsv(IFormFile file)
     {
         CsvParserOptions csvParserOptions = new CsvParserOptions(true, ',');
         List<Employee> employees = new List<Employee>();
         CsvEmployeeMapping csvMapper = new CsvEmployeeMapping();
         CsvParser<EmployeeMappingHelper> csvParser = new CsvParser<EmployeeMappingHelper>(csvParserOptions, csvMapper);
         var result = csvParser
-                     .ReadFromStream(file.OpenReadStream(),Encoding.ASCII)
+                     .ReadFromStream(file.OpenReadStream(), Encoding.ASCII)
                      .ToList();
 
         Console.WriteLine("Name " + "ID   " + "City  " + "Country");
@@ -218,9 +305,10 @@ public class DataManipulationService : IDataManipulationService
         {
             if (details.IsValid)
             {
-                DateTime dob =  DateTime.Parse(details.Result.DOB, CultureInfo.InvariantCulture);
+                DateTime dob = DateTime.Parse(details.Result.DOB, CultureInfo.InvariantCulture);
                 Console.WriteLine(dob);
-                Employee employee = new Employee{
+                Employee employee = new Employee
+                {
                     Salary = details.Result.Salary,
                     Designation = details.Result.Designation,
                     FullName = details.Result.FullName,
@@ -229,10 +317,12 @@ public class DataManipulationService : IDataManipulationService
                 };
                 employees.Add(employee);
             }
-            else{
+            else
+            {
                 if (details.RowIndex != 1)
                 {
-                    return new ExcelParseResult {
+                    return new ExcelParseResult
+                    {
                         Success = false,
                         ErrorMessage = details.Error.Value,
                     };

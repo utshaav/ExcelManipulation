@@ -58,7 +58,7 @@ public class EmployeeController : Controller
     {
         string message = string.Empty;
         ExcelParseResult result = postedFile.FileName.Contains(".csv")
-                ? await _dataManipulation.ParseCsvAsync(postedFile)
+                ?  _dataManipulation.ParseCsv(postedFile)
                 : _dataManipulation.ParseExcel(postedFile);
 
         if (result.Success)
@@ -111,12 +111,17 @@ public class EmployeeController : Controller
     }
 
     [HttpPost]
-    public FileResult Download(List<string> excel_row, List<string> excel_column)
+    public FileResult Download(List<string> excel_row, List<string> excel_column, string fileType)
     {
-        byte[] fileBytes = _dataManipulation.ExcelExport(excel_row, excel_column);
-        string fileName = "myfile.xlsx";
+        Export result = new ();
+        if(fileType.ToLower() == "excel")
+        result = _dataManipulation.ExcelExport(excel_row, excel_column);
+        else if(fileType.ToLower() == "csv")
+        result = _dataManipulation.CsvExport(excel_row, excel_column);
+
+        string fileName = "myfile" + result.Extension;
         // string fileName = "myfile.csv";
-        return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
+        return File(result.File, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
     }
 
     [HttpGet]
