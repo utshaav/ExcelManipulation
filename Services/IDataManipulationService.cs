@@ -5,8 +5,9 @@ public interface IDataManipulationService
 {
     ExcelParseResult ParseExcel(IFormFile file);
     public ExcelParseResult ParseCsv(IFormFile file);
-    Export ExcelExport(List<string> excel_row, List<string> excel_column);
-    Export CsvExport(List<string> excel_row, List<string> excel_column);
+    Export ExcelExport(List<string> row, List<string> column);
+    Export CsvExport(List<string> row, List<string> column);
+    Export PdfExport(List<string> row, List<string> column);
 
 
 }

@@ -111,13 +111,17 @@ public class EmployeeController : Controller
     }
 
     [HttpPost]
-    public FileResult Download(List<string> excel_row, List<string> excel_column, string fileType)
+    public IActionResult Download(List<string> excel_row, List<string> excel_column, string fileType)
     {
+        Console.WriteLine(fileType);
         Export result = new ();
         if(fileType.ToLower() == "excel")
         result = _dataManipulation.ExcelExport(excel_row, excel_column);
         else if(fileType.ToLower() == "csv")
         result = _dataManipulation.CsvExport(excel_row, excel_column);
+        else if(fileType.ToLower() == "pdf")
+        result = _dataManipulation.PdfExport(excel_row, excel_column);
+
 
         string fileName = "myfile" + result.Extension;
         // string fileName = "myfile.csv";

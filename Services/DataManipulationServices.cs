@@ -3,6 +3,7 @@ using System.Text;
 using CsvHelper;
 using ExcelManipulation.Models;
 using OfficeOpenXml;
+using SelectPdf;
 // using CsvHelper;
 // using CsvHelper.Configuration;
 using TinyCsvParser;
@@ -114,16 +115,16 @@ public class DataManipulationService : IDataManipulationService
     // }
 
 
-    public Export ExcelExport(List<string> excel_row, List<string> excel_column)
+    public Export ExcelExport(List<string> row, List<string> column)
     {
         List<Employee> employees = new();
-        if (excel_row.Count == 0)
+        if (row.Count == 0)
         {
             employees = _employeeDb.GetAllEmployees();
         }
         else
         {
-            foreach (var item in excel_row)
+            foreach (var item in row)
             {
                 employees.Add(_employeeDb.GetEmployee(Guid.Parse(item)));
             }
@@ -133,7 +134,7 @@ public class DataManipulationService : IDataManipulationService
         {
             //create the WorkSheet
             ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("Sheet 1");
-            if (excel_column.Count == 0)
+            if (column.Count == 0)
             {
                 worksheet.Cells[1, 1].Value = "Full Name";
                 worksheet.Cells[1, 2].Value = "Designation";
@@ -159,15 +160,15 @@ public class DataManipulationService : IDataManipulationService
                 Employee dummyObj = new Employee();
                 foreach (var prop in dummyObj.GetType().GetProperties())
                 {
-                    if (excel_column.Contains(prop.Name))
+                    if (column.Contains(prop.Name))
                     {
                         worksheet.Cells[1, i + 1].Value = prop.Name;
                         i++;
                     }
                 }
-                // for (int i = 0; i < excel_column.Count; i++)
+                // for (int i = 0; i < column.Count; i++)
                 // {
-                //     worksheet.Cells[1, i + 1].Value = excel_column[i];
+                //     worksheet.Cells[1, i + 1].Value = column[i];
                 //     // for (int j = 0; j < employees.Count; j++)
                 //     // {
                 //     //     worksheet.Cells[j + 2, i + 1].Value = employees[j].FullName;
@@ -183,7 +184,7 @@ public class DataManipulationService : IDataManipulationService
                     int l = 0;
                     foreach (var prop in employee.GetType().GetProperties())
                     {
-                        if (excel_column.Contains(prop.Name))
+                        if (column.Contains(prop.Name))
                         {
                             worksheet.Cells[k + 2, l + 1].Value = prop.GetValue(employee);
                             if (prop.Name == "DateOfBirth")
@@ -200,7 +201,8 @@ public class DataManipulationService : IDataManipulationService
 
             //convert the excel package to a byte array
             byte[] bin = excelPackage.GetAsByteArray();
-            return new Export{
+            return new Export
+            {
                 Success = true,
                 File = bin,
                 Extension = ".xlsx"
@@ -208,17 +210,17 @@ public class DataManipulationService : IDataManipulationService
         }
     }
 
-    public Export CsvExport(List<string> excel_row, List<string> excel_column)
+    public Export CsvExport(List<string> row, List<string> column)
     {
         List<Employee> employees = new();
         byte[] file;
-        if (excel_row.Count == 0)
+        if (row.Count == 0)
         {
             employees = _employeeDb.GetAllEmployees();
         }
         else
         {
-            foreach (var item in excel_row)
+            foreach (var item in row)
             {
                 employees.Add(_employeeDb.GetEmployee(Guid.Parse(item)));
             }
@@ -228,7 +230,7 @@ public class DataManipulationService : IDataManipulationService
             using (TextWriter streamWriter = new StreamWriter(memoryStream))
             using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
             {
-                if (excel_column.Count == 0)
+                if (column.Count == 0)
                 {
                     csvWriter.WriteField("Full Name");
                     csvWriter.WriteField("Designation");
@@ -254,7 +256,7 @@ public class DataManipulationService : IDataManipulationService
                     Employee dummyObj = new Employee();
                     foreach (var prop in dummyObj.GetType().GetProperties())
                     {
-                        if (excel_column.Contains(prop.Name))
+                        if (column.Contains(prop.Name))
                         {
                             csvWriter.WriteField(prop.Name);
                             i++;
@@ -268,7 +270,7 @@ public class DataManipulationService : IDataManipulationService
                         int l = 0;
                         foreach (var prop in employee.GetType().GetProperties())
                         {
-                            if (excel_column.Contains(prop.Name))
+                            if (column.Contains(prop.Name))
                             {
                                 csvWriter.WriteField(prop.GetValue(employee));
                                 l++;
@@ -283,13 +285,43 @@ public class DataManipulationService : IDataManipulationService
 
             file = memoryStream.ToArray();
         }
-        return new Export{
+        return new Export
+        {
             Success = true,
             File = file,
             Extension = ".csv"
         };
     }
 
+    public Export PdfExport(List<string> row, List<string> column)
+    {
+        List<Employee> employees = new();
+        byte[] file;
+        if (row.Count == 0)
+        {
+            employees = _employeeDb.GetAllEmployees();
+        }
+        else
+        {
+            foreach (var item in row)
+            {
+                employees.Add(_employeeDb.GetEmployee(Guid.Parse(item)));
+            }
+        }
+
+        string htmlText = "<h1> This is Sample Pdf file</h1> <p> This is the demo for Csharp Created Pdf using IronPdf </p> <p> IronPdf is a library which provides build in functions for creating, reading <br> and manuplating pdf files with just few lines of code. </p>";
+        var HtmlLine = new HtmlToPdf();
+        var pdfDoc = HtmlLine.ConvertHtmlString(htmlText);
+        file = pdfDoc.Save();
+        Console.WriteLine(file);
+        pdfDoc.Close();
+
+        return new Export{
+            File= file,
+            Success = true,
+            Extension = ".pdf"
+        };
+    }
     public ExcelParseResult ParseCsv(IFormFile file)
     {
         CsvParserOptions csvParserOptions = new CsvParserOptions(true, ',');
