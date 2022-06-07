@@ -57,9 +57,10 @@ public class EmployeeController : Controller
     public async Task<IActionResult> ImportFile([FromForm] IFormFile postedFile)
     {
         string message = string.Empty;
+        var userId =  User.FindFirstValue(ClaimTypes.NameIdentifier);
         ExcelParseResult result = postedFile.FileName.Contains(".csv")
-                ?  _dataManipulation.ParseCsv(postedFile)
-                : _dataManipulation.ParseExcel(postedFile);
+                ?  _dataManipulation.ParseCsv(postedFile, userId)
+                : _dataManipulation.ParseExcel(postedFile, userId);
 
         if (result.Success)
         {

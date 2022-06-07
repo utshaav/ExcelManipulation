@@ -19,7 +19,7 @@ public class DataManipulationService : IDataManipulationService
         _employeeDb = employeeDb;
 
     }
-    public ExcelParseResult ParseExcel(IFormFile file)
+    public ExcelParseResult ParseExcel(IFormFile file, string userId)
     {
         List<Employee> employees = new List<Employee>();
         List<int> emptyRows = new List<int>();
@@ -53,15 +53,17 @@ public class DataManipulationService : IDataManipulationService
                         var employee = new Employee();
                         var date = worksheet.Cells[i, 5].GetValue<DateTime>();
                         employee.FullName = worksheet.Cells[i, 1].GetValue<string>();
-                        employee.Gender = worksheet.Cells[i, 2].GetValue<string>();
-                        employee.Designation = worksheet.Cells[i, 3].GetValue<string>();
+                        employee.Designation = worksheet.Cells[i, 2].GetValue<string>();
+                        employee.Gender = worksheet.Cells[i, 3].GetValue<string>();
                         employee.Salary = worksheet.Cells[i, 4].GetValue<float>();
                         employee.DateOfBirth = worksheet.Cells[i, 5].GetValue<DateTime>();
-                        // employee.ImportedBy = Environment.UserName;
+                        // employee.ImportedBy = User
+                        employee.ImportedBy = Guid.Parse(userId);
                         employees.Add(employee);
                     }
                     catch (Exception e)
                     {
+                        Console.WriteLine(e);
                         return new ExcelParseResult
                         {
                             Success = false,
@@ -322,7 +324,7 @@ public class DataManipulationService : IDataManipulationService
             Extension = ".pdf"
         };
     }
-    public ExcelParseResult ParseCsv(IFormFile file)
+    public ExcelParseResult ParseCsv(IFormFile file, string userId)
     {
         CsvParserOptions csvParserOptions = new CsvParserOptions(true, ',');
         List<Employee> employees = new List<Employee>();
@@ -345,7 +347,8 @@ public class DataManipulationService : IDataManipulationService
                     Designation = details.Result.Designation,
                     FullName = details.Result.FullName,
                     Gender = details.Result.Gender,
-                    DateOfBirth = dob
+                    DateOfBirth = dob,
+                    ImportedBy = Guid.Parse(userId)
                 };
                 employees.Add(employee);
             }
