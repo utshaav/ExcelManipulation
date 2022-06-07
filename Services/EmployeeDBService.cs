@@ -18,15 +18,53 @@ public class EmployeeDBService : IEmployeeDBService
         return employee!;
     }
 
-    public async Task<EmployeeResponse> GetAllEmployees(int page = 0)
+    public async Task<EmployeeResponse> GetAllEmployees(Filter filter)
     {
+        List<Employee> employees = await _dbContext.Employees.ToListAsync();
+        if (filter == null) filter = new Filter();
+        else if (filter.RequireFIlter)
+        {
+            if (filter.Gender != null)
+            {
+                employees = employees.Where(x => x.Gender.ToLower() == filter.Gender.ToLower()).ToList();
+            }
+            if (filter.EmployeeName != null)
+            {
+                employees = employees.Where(x => x.FullName.ToLower().Contains(filter.EmployeeName.ToLower())).ToList();
+            }
+            if (filter.Designation != null)
+            {
+                employees = employees.Where(x => x.Designation.ToLower() == filter.Designation.ToLower()).ToList();
+            }
+            if (filter.StartSalary != 0)
+            {
+                employees = employees.Where(x => x.Salary >= filter.StartSalary).ToList();
+            }
+            if (filter.EndSalary != 0)
+            {
+                employees = employees.Where(x => x.Salary <= filter.EndSalary).ToList();
+            }
+            if (filter.StartDate != DateTime.MinValue)
+            {
+                employees = employees.Where(x => x.ImportedDate >= filter.StartDate).ToList();
+            }
+            if (filter.EndDate != DateTime.MinValue)
+            {
+                employees = employees.Where(x => x.ImportedDate <= filter.EndDate).ToList();
+            }
+            if(filter.ImportedBy != null){
+                employees = employees.Where(x => x.ImportedBy == filter.ImportedBy).ToList();
+            }
+        }
+        var page = filter.PageNo;
         var pageResult = 10f;
         var pageCount = Math.Ceiling(_dbContext.Employees.Count() / pageResult);
-        var employees = await _dbContext.Employees
-            .Skip((page-1)*(int)pageResult)
+        employees =  employees
+            .Skip((page - 1) * (int)pageResult)
             .Take((int)pageResult)
-            .ToListAsync();
-        return new EmployeeResponse{
+            .ToList();
+        return new EmployeeResponse
+        {
             CurrentPage = page,
             Pages = (int)pageCount,
             Employees = employees
@@ -35,7 +73,7 @@ public class EmployeeDBService : IEmployeeDBService
 
     public List<Employee> GetAllEmployees()
     {
-        var employees =  _dbContext.Employees.ToList();
+        var employees = _dbContext.Employees.ToList();
         return employees;
     }
 

@@ -33,6 +33,11 @@ public class EmployeeController : Controller
     [HttpGet]
     public async Task<IActionResult> Index(int? page, bool redirected = false)
     {
+        Filter filter = new Filter{
+            PageNo = page??=1,
+            RequireFIlter = false,
+        };
+
         Console.WriteLine(User.FindFirstValue(ClaimTypes.NameIdentifier));
         if (redirected && TempData["Message"] != null)
         {
@@ -40,7 +45,7 @@ public class EmployeeController : Controller
         }
         ViewBag.Redirected = redirected;
         int pageNo = page ??= 1;
-        var employees = await _employeeDB.GetAllEmployees(pageNo);
+        var employees = await _employeeDB.GetAllEmployees(filter);
         ViewBag.Count = employees.Employees.Count;
         return View(employees);
     }
