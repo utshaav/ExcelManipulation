@@ -1,0 +1,105 @@
+@model EmployeeResponse
+@{
+  int i = 0;
+  bool firstPage = Model.CurrentPage == 1;
+  bool lastPage = Model.Pages == Model.CurrentPage;
+  int previousPage = Model.CurrentPage - 1;
+  int nextPage = Model.CurrentPage + 1;
+}
+<form id="download" asp-action="Download" method="post">
+  <input name="fileType" id="export_type" hidden>
+  <input name="CurrentPage" value="@Model.CurrentPage" hidden>
+  <table class="table table-hover m-t-20">
+        <thead class="thead-light">
+      <tr>
+        <th scope="col"># <input type="checkbox" id="select_all"></th>
+        <th scope="col">Name <input type="checkbox" name="excel_column" value="FullName"></th>
+        <th scope="col">Gender <input type="checkbox" name="excel_column" value="Gender"></th>
+        <th scope="col">Designation <input type="checkbox" name="excel_column" value="Designation"></th>
+        <th scope="col">Salary <input type="checkbox" name="excel_column" value="Salary"></th>
+        <th scope="col">Date Of Birth <input type="checkbox" name="excel_column" value="DateOfBirth"></th>
+        <th scope="col">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (Model.Employees != null && Model.Employees.Count > 0)
+      {
+        @foreach (var item in Model.Employees)
+        {
+          i++;
+          <tr>
+            <th scope="row" onclick="viewDetail(@item.Id)">@i <input type="checkbox" name="excel_row" value="@item.Id"></th>
+            <td onclick="viewDetail(@item.Id)">@item.FullName</td>
+            <td onclick="viewDetail(@item.Id)">@item.Gender</td>
+            <td onclick="viewDetail(@item.Id)">@item.Designation</td>
+            <td onclick="viewDetail(@item.Id)">@item.Salary</td>
+            <td onclick="viewDetail(@item.Id)">@item.DateOfBirth</td>
+            <td scope="row">
+              <button style="width: 90px;" type="button" class="btn btn-primary" id="edit-btn"
+            onclick="updateEmployee('@item.Id')">
+                Edit
+              </button>
+              <button style="width: 90px;" type="button" class="btn btn-danger"
+            onclick="deleteEmployee('@item.Id.ToString()')" data-toggle="modal" data-target="#DeleteModal">
+                Delete
+              </button>
+            </td>
+          </tr>
+        }
+      }
+      else{
+        <td>No data!!</td>
+      }
+
+      <tr>
+        <td colspan="6">
+        @if(Model.Employees != null && Model.Employees.Count > 0 && Model.Pages > 1){
+          
+          <nav aria-label="Page navigation">
+            <ul class="pagination">
+              <li class="page-item">
+                <a class="page-link" href="employee?page=@previousPage" aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+              @for (i = 1; i <= Model.Pages; i++)
+              {
+                  <li class="page-item"><a class="page-link" href="employee?page=@i">@i</a></li>
+              }
+              <li class="page-item">
+                <a class="page-link" href="employee?page=@nextPage" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        
+        }
+        </td>
+        <td>
+          <button style="width: 180px;" type="button" id="export_file" class="btn btn-success">
+            Export File
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</form>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+<script>
+  $('#export_file').click(function (e) {
+    debugger
+    e.preventDefault();
+    $('#exampleModalCenter').modal("hide");
+
+    $.ajax({
+      url: "/Employee/ExportChoice",
+      success: function (res) {
+        $('#modal-content').html(res);
+        $('#exampleModalCenter').modal("show");
+      }
+    })
+  });
+
+</script>

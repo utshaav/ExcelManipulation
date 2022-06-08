@@ -149,5 +149,12 @@ public class EmployeeController : Controller
         return RedirectToAction("Index", new { redirected = true });
     }
 
+    [HttpPost]
+    public async Task<IActionResult> FilterSearch(Filter filter)
+    {
+        EmployeeResponse response = await _employeeDB.GetAllEmployees(filter);
+        return PartialView("_EmployeeTable",response);
+    }
+
 
 }

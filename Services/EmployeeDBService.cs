@@ -26,7 +26,7 @@ public class EmployeeDBService : IEmployeeDBService
         {
             if (filter.Gender != null)
             {
-                employees = employees.Where(x => x.Gender.ToLower() == filter.Gender.ToLower()).ToList();
+                employees = employees.Where(x => x.Gender.ToLower().Contains(filter.Gender.ToLower())).ToList();
             }
             if (filter.EmployeeName != null)
             {
