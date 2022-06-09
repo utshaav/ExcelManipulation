@@ -119,7 +119,7 @@ public class EmployeeController : Controller
     }
 
     [HttpPost]
-    public IActionResult Download(List<string> excel_row, List<string> excel_column, string fileType)
+    public async Task<IActionResult> Download(List<string> excel_row, List<string> excel_column, string fileType)
     {
         Console.WriteLine(fileType);
         Export result = new ();
@@ -128,7 +128,7 @@ public class EmployeeController : Controller
         else if(fileType.ToLower() == "csv")
         result = _dataManipulation.CsvExport(excel_row, excel_column);
         else if(fileType.ToLower() == "pdf")
-        result = _dataManipulation.PdfExport(excel_row, excel_column);
+        result = await _dataManipulation.PdfExportAsync(excel_row, excel_column, HttpContext);
 
 
         string fileName = "myfile" + result.Extension;

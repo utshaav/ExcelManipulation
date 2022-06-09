@@ -1,0 +1,61 @@
+@model List<Employee>
+@{
+    int i = 1;
+}
+
+
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+<style>
+    table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    td,
+    th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #dddddd;
+    }
+</style>
+
+<table class="table table-hover m-t-20">
+    <thead class="thead-light">
+        <tr>
+            <th scope="col">#
+            <th scope="col">Name
+            <th scope="col">Gender
+            <th scope="col">Designation
+            <th scope="col">Salary
+            <th scope="col">Date Of Birth
+
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Count > 0)
+        {
+            @foreach (var item in Model)
+            {
+                i++;
+                <tr>
+                    <th scope="row">@i </th>
+                    <td>@item.FullName</td>
+                    <td>@item.Gender</td>
+                    <td>@item.Designation</td>
+                    <td>@item.Salary</td>
+                    <td>@item.DateOfBirth</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <td>No data!!</td>
+        }
+
+    </tbody>
+</table>

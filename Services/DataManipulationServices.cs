@@ -4,7 +4,12 @@ using CsvHelper;
 using ExcelManipulation.Enums;
 using ExcelManipulation.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using OfficeOpenXml;
 using SelectPdf;
 // using CsvHelper;
@@ -18,8 +23,19 @@ public class DataManipulationService : IDataManipulationService
 {
     private readonly IEmployeeDBService _employeeDb;
     private readonly UserManager<IdentityUser> _userManager;
-    public DataManipulationService(IEmployeeDBService employeeDb, UserManager<IdentityUser> userManager)
+    private readonly IRazorViewEngine _viewEngine;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ITempDataProvider _tempData;
+
+    public DataManipulationService(IEmployeeDBService employeeDb,
+                                    UserManager<IdentityUser> userManager,
+                                    IRazorViewEngine viewEngine,
+                                    IServiceProvider serviceProvider,
+                                    ITempDataProvider tempData)
     {
+        _viewEngine = viewEngine;
+        _serviceProvider = serviceProvider;
+        _tempData = tempData;
         _userManager = userManager;
         _employeeDb = employeeDb;
 
@@ -300,7 +316,7 @@ public class DataManipulationService : IDataManipulationService
         };
     }
 
-    public Export PdfExport(List<string> row, List<string> column)
+    public async Task<Export> PdfExportAsync(List<string> row, List<string> column, HttpContext httpCtx)
     {
         List<Employee> employees = new();
         byte[] file;
@@ -315,12 +331,30 @@ public class DataManipulationService : IDataManipulationService
                 employees.Add(_employeeDb.GetEmployee(Guid.Parse(item)));
             }
         }
+        string viewAsHtml;
+        using (var sw = new StringWriter())
+        {
+            httpCtx = new DefaultHttpContext
+            {
+                RequestServices = _serviceProvider
+            };
+            var actionContext = new ActionContext(httpCtx, new RouteData(), new ActionDescriptor());
+            var view = _viewEngine.FindView(actionContext, "_PdfExport", false);
+            Console.WriteLine(view);
+            var vieDictionary = new ViewDataDictionary<List<Employee>>(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+            {
+                Model = employees
+            };
+            var tempData = new TempDataDictionary(httpCtx, _tempData);
+            var viewContext = new ViewContext(actionContext, view.View, vieDictionary, tempData, sw, new HtmlHelperOptions());
+            await view.View.RenderAsync(viewContext);
+            viewAsHtml = sw.ToString();
+        }
 
         string htmlText = "<h1> This is Sample Pdf file</h1> <p> This is the demo for Csharp Created Pdf using IronPdf </p> <p> IronPdf is a library which provides build in functions for creating, reading <br> and manuplating pdf files with just few lines of code. </p>";
         var HtmlLine = new HtmlToPdf();
-        var pdfDoc = HtmlLine.ConvertHtmlString(htmlText);
+        var pdfDoc = HtmlLine.ConvertHtmlString(viewAsHtml);
         file = pdfDoc.Save();
-        Console.WriteLine(file);
         pdfDoc.Close();
 
         return new Export
@@ -378,10 +412,10 @@ public class DataManipulationService : IDataManipulationService
     {
         List<SelectListItem> res = new List<SelectListItem>();
         var users = await _userManager.GetUsersInRoleAsync(Roles.Admin.ToString());
-        res.Add(new SelectListItem{Value = "", Text = "Select Importer"});
+        res.Add(new SelectListItem { Value = "", Text = "Select Importer" });
         foreach (var item in users)
         {
-            res.Add(new SelectListItem{Value = item.Id, Text = item.UserName});
+            res.Add(new SelectListItem { Value = item.Id, Text = item.UserName });
         }
 
         return res;
