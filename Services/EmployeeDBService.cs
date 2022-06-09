@@ -46,6 +46,7 @@ public class EmployeeDBService : IEmployeeDBService
             }
             if (filter.StartDate != DateTime.MinValue)
             {
+                filter.StartDate = DateTime.Parse((filter.StartDate).ToShortDateString());
                 if (filter.DateType == "DOB")
                 {
 
@@ -59,6 +60,8 @@ public class EmployeeDBService : IEmployeeDBService
             }
             if (filter.EndDate != DateTime.MinValue)
             {
+                
+                filter.EndDate = DateTime.Parse((filter.EndDate.AddDays(1)).ToShortDateString());
                 if (filter.DateType == "DOB")
                 {
 
