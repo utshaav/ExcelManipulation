@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Text;
 using CsvHelper;
@@ -44,6 +45,10 @@ public class DataManipulationService : IDataManipulationService
     {
         List<Employee> employees = new List<Employee>();
         List<int> emptyRows = new List<int>();
+        var employee = new Employee();
+        //For validation
+        List<ValidationResult> results = new List<ValidationResult>();
+        ValidationContext context = new ValidationContext(employee, null, null);
         using (var package = new ExcelPackage(file.OpenReadStream()))
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -62,16 +67,15 @@ public class DataManipulationService : IDataManipulationService
                             emptyRows.Add(i);
                             continue;
                         }
-                        bool isCellEmpty = cellRange.Any(c => c.Value == null);
-                        if (isCellEmpty)
-                            throw new Exception($"Import failed because row {i} have a empty cell.");
+                        bool isCellEmpty = cellRange.Any(c => string.IsNullOrEmpty(c.GetValue<string>()));
+                        
                         // return new ExcelParseResult
                         // {
                         //     Success = false,
                         //     ErrorMessage = $"Import failed because row {i} have a empty cell."
                         // };
 
-                        var employee = new Employee();
+
                         var date = worksheet.Cells[i, 5].GetValue<DateTime>();
                         employee.FullName = worksheet.Cells[i, 1].GetValue<string>();
                         employee.Designation = worksheet.Cells[i, 2].GetValue<string>();
@@ -80,7 +84,14 @@ public class DataManipulationService : IDataManipulationService
                         employee.DateOfBirth = worksheet.Cells[i, 5].GetValue<DateTime>();
                         // employee.ImportedBy = User
                         employee.ImportedBy = Guid.Parse(userId);
+                        if (!Validator.TryValidateObject(employee, context, results, true))
+                        {
+                            throw new Exception($"Import failed because row {i} have a empty cell.");
+                        }
                         employees.Add(employee);
+
+
+
                     }
                     catch (Exception e)
                     {
@@ -189,18 +200,7 @@ public class DataManipulationService : IDataManipulationService
                         i++;
                     }
                 }
-                // for (int i = 0; i < column.Count; i++)
-                // {
-                //     worksheet.Cells[1, i + 1].Value = column[i];
-                //     // for (int j = 0; j < employees.Count; j++)
-                //     // {
-                //     //     worksheet.Cells[j + 2, i + 1].Value = employees[j].FullName;
-                //     //     worksheet.Cells[j + 2, i + 1].Value = employees[j].Designation;
-                //     //     worksheet.Cells[j + 2, i + 1].Value = employees[j].Gender;
-                //     //     worksheet.Cells[j + 2, i + 1].Value = employees[j].Salary;
-                //     //     worksheet.Cells[j + 2, i + 1].Value = employees[j].DateOfBirth;
-                //     // }
-                // }
+
                 int k = 0;
                 foreach (var employee in employees)
                 {
