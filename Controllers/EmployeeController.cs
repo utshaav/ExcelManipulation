@@ -131,7 +131,7 @@ public class EmployeeController : Controller
         result = await _dataManipulation.PdfExportAsync(excel_row, excel_column, HttpContext);
 
 
-        string fileName = "myfile" + result.Extension;
+        string fileName = $"myfile-{DateTime.Now.ToShortDateString()}{result.Extension}";
         // string fileName = "myfile.csv";
         return File(result.File, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
     }
