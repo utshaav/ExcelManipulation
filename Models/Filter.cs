@@ -12,5 +12,7 @@ public class Filter : EmployeeResponse
     public int PageNo { get; set; } = 1;
     public Guid ImportedBy { get; set; }
     public bool RequireFIlter { get; set; } = true;
+    public string DateType { get; set; }
+
     
 }

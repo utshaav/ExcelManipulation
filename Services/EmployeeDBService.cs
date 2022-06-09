@@ -46,20 +46,40 @@ public class EmployeeDBService : IEmployeeDBService
             }
             if (filter.StartDate != DateTime.MinValue)
             {
-                employees = employees.Where(x => x.ImportedDate >= filter.StartDate).ToList();
+                if (filter.DateType == "DOB")
+                {
+
+                    employees = employees.Where(x => x.DateOfBirth >= filter.StartDate).ToList();
+                }
+                if (filter.DateType == "IMP")
+                {
+                    employees = employees.Where(x => x.ImportedDate >= filter.StartDate).ToList();
+
+                }
             }
             if (filter.EndDate != DateTime.MinValue)
             {
-                employees = employees.Where(x => x.ImportedDate <= filter.EndDate).ToList();
+                if (filter.DateType == "DOB")
+                {
+
+                    employees = employees.Where(x => x.DateOfBirth <= filter.EndDate).ToList();
+                }
+                if (filter.DateType == "IMP")
+                {
+                    employees = employees.Where(x => x.ImportedDate <= filter.EndDate).ToList();
+
+                }
+
             }
-            if(filter.ImportedBy != null){
+            if (filter.ImportedBy != Guid.Empty)
+            {
                 employees = employees.Where(x => x.ImportedBy == filter.ImportedBy).ToList();
             }
         }
         var page = filter.PageNo;
         var pageResult = 10f;
         var pageCount = Math.Ceiling(_dbContext.Employees.Count() / pageResult);
-        employees =  employees
+        employees = employees
             .Skip((page - 1) * (int)pageResult)
             .Take((int)pageResult)
             .ToList();

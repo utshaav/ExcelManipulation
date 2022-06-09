@@ -10,25 +10,41 @@
     <div id="modal-content" class="m-b-10">
         <div class="container">
             <div class="container p-5 gap-3">
-               
-                    @foreach (var item in Model)
-                    {
-                        <button type="button" class="export_file btn btn-success w-100 my-2" data-type="@item">@item</button>
-                    }
-                
-                
+
+                @foreach (var item in Model)
+                {
+                    <button type="button" class="export_file btn btn-success w-100 my-2" id="@item" data-type="@item">@item</button>
+                }
+
+
             </div>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary m-t-10" data-bs-dismiss="modal" asp-controller="Employee" asp-action="Index">Close</button>
+            <button type="button" class="btn btn-secondary m-t-10" data-bs-dismiss="modal" asp-controller="Employee"
+                asp-action="Index">Close</button>
             @* <button type="submit" class="btn btn-primary">Save changes</button> *@
         </div>
     </div>
 </div>
 
 <script>
-   $('.export_file').click(function (e) {
+    $('.export_file').click(function (e) {
         $('#export_type').val(e.target.getAttribute('data-type'))
         $('#download').submit();
     })
+
+    var doc = new jsPDF();
+    var specialElementHandlers = {
+        '#editor': function (element, renderer) {
+            return true;
+        }
+    };
+
+    $('#item').click(function () {
+        doc.fromHTML($('#content').html(), 15, 15, {
+            'width': 170,
+            'elementHandlers': specialElementHandlers
+        });
+        doc.save('sample-file.pdf');
+    });
 </script>

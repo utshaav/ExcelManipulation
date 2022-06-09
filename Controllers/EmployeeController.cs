@@ -38,6 +38,8 @@ public class EmployeeController : Controller
             RequireFIlter = false,
         };
 
+        @ViewBag.ImporterDD = await _dataManipulation.ImporterDD();
+
         Console.WriteLine(User.FindFirstValue(ClaimTypes.NameIdentifier));
         if (redirected && TempData["Message"] != null)
         {

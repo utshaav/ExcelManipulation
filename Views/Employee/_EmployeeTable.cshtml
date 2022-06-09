@@ -12,13 +12,13 @@
   <table class="table table-hover m-t-20">
         <thead class="thead-light">
       <tr>
-        <th scope="col"># <input type="checkbox" id="select_all"></th>
-        <th scope="col">Name <input type="checkbox" name="excel_column" value="FullName"></th>
-        <th scope="col">Gender <input type="checkbox" name="excel_column" value="Gender"></th>
-        <th scope="col">Designation <input type="checkbox" name="excel_column" value="Designation"></th>
-        <th scope="col">Salary <input type="checkbox" name="excel_column" value="Salary"></th>
-        <th scope="col">Date Of Birth <input type="checkbox" name="excel_column" value="DateOfBirth"></th>
-        <th scope="col">Action</th>
+        <th scope="col"># <input class="d-print-none" type="checkbox" id="select_all"></th>
+        <th scope="col">Name <input class="d-print-none" type="checkbox" name="excel_column" value="FullName"></th>
+        <th scope="col">Gender <input class="d-print-none" type="checkbox" name="excel_column" value="Gender"></th>
+        <th scope="col">Designation <input class="d-print-none" type="checkbox" name="excel_column" value="Designation"></th>
+        <th scope="col">Salary <input class="d-print-none" type="checkbox" name="excel_column" value="Salary"></th>
+        <th scope="col">Date Of Birth <input class="d-print-none" type="checkbox" name="excel_column" value="DateOfBirth"></th>
+        <th scope="col" class="d-print-none">Action</th>
       </tr>
     </thead>
     <tbody>
@@ -28,13 +28,13 @@
         {
           i++;
           <tr>
-            <th scope="row" onclick="viewDetail(@item.Id)">@i <input type="checkbox" name="excel_row" value="@item.Id"></th>
+            <th scope="row" onclick="viewDetail(@item.Id)">@i <input class="d-print-none" type="checkbox" name="excel_row" value="@item.Id"></th>
             <td onclick="viewDetail(@item.Id)">@item.FullName</td>
             <td onclick="viewDetail(@item.Id)">@item.Gender</td>
             <td onclick="viewDetail(@item.Id)">@item.Designation</td>
             <td onclick="viewDetail(@item.Id)">@item.Salary</td>
             <td onclick="viewDetail(@item.Id)">@item.DateOfBirth</td>
-            <td scope="row">
+            <td scope="row" class="d-print-none">
               <button style="width: 90px;" type="button" class="btn btn-primary" id="edit-btn"
             onclick="updateEmployee('@item.Id')">
                 Edit
@@ -51,7 +51,7 @@
         <td>No data!!</td>
       }
 
-      <tr>
+      <tr class="d-print-none">
         <td colspan="6">
         @if(Model.Employees != null && Model.Employees.Count > 0 && Model.Pages > 1){
           

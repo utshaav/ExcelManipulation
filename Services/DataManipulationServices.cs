@@ -1,7 +1,10 @@
 using System.Globalization;
 using System.Text;
 using CsvHelper;
+using ExcelManipulation.Enums;
 using ExcelManipulation.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using OfficeOpenXml;
 using SelectPdf;
 // using CsvHelper;
@@ -14,8 +17,10 @@ namespace ExcelManipulation.Services;
 public class DataManipulationService : IDataManipulationService
 {
     private readonly IEmployeeDBService _employeeDb;
-    public DataManipulationService(IEmployeeDBService employeeDb)
+    private readonly UserManager<IdentityUser> _userManager;
+    public DataManipulationService(IEmployeeDBService employeeDb, UserManager<IdentityUser> userManager)
     {
+        _userManager = userManager;
         _employeeDb = employeeDb;
 
     }
@@ -318,8 +323,9 @@ public class DataManipulationService : IDataManipulationService
         Console.WriteLine(file);
         pdfDoc.Close();
 
-        return new Export{
-            File= file,
+        return new Export
+        {
+            File = file,
             Success = true,
             Extension = ".pdf"
         };
@@ -366,6 +372,19 @@ public class DataManipulationService : IDataManipulationService
         }
 
         return new ExcelParseResult { Employees = employees, EmptyRows = new List<int>() };
+    }
+
+    public async Task<List<SelectListItem>> ImporterDD()
+    {
+        List<SelectListItem> res = new List<SelectListItem>();
+        var users = await _userManager.GetUsersInRoleAsync(Roles.Admin.ToString());
+        res.Add(new SelectListItem{Value = "", Text = "Select Importer"});
+        foreach (var item in users)
+        {
+            res.Add(new SelectListItem{Value = item.Id, Text = item.UserName});
+        }
+
+        return res;
     }
 
     private class CsvEmployeeMapping : CsvMapping<EmployeeMappingHelper>

@@ -2,12 +2,17 @@
   ViewData["Title"] = "Employee";
 }
 @model EmployeeResponse
+<div class="d-print-none">
+  <button onClick="window.print()">
+    Print this page
+  </button>
+</div>
 <span id="data_message" message=@ViewBag.Message style="display: none;">@ViewBag.Message</span>
 <span id="data_redirected" message=@ViewBag.Message style="display: none;">@ViewBag.Redirected</span>
 <div style="height:20px; width:100%; clear:both;"></div>
 
 
-<div class="container">
+<div class="container d-print-none">
   <div class="row justify-content-between">
     <h3>List of Employee (@ViewBag.Count)</h3>
     @if (User.Identity.IsAuthenticated)
@@ -29,7 +34,7 @@
 
 <div style="height:30px; width:100%; clear:both;"></div>
 
-<partial name=_Filters.cshtml model=@Model.CurrentPage></partial>
+<partial class="d-print-none" name=_Filters.cshtml model=@Model.CurrentPage></partial>
 <div id="employee_table">
   <partial name=_EmployeeTable.cshtml model=@Model></partial>
 </div>
@@ -69,7 +74,7 @@
     })
   });
 
-  
+
 
 
   function updateEmployee(id) {
@@ -122,33 +127,33 @@
     $('input:checkbox').prop('checked', this.checked);
   })
 
-      function toggleFilter(e){
-        debugger
-        var value = e.innerText;
-        if(value == "[+]"){
-            e.innerText = " [-] "
-        }else{
-            e.innerText = " [+] "
-        }
-        $("#filter").toggle();
+  function toggleFilter(e) {
+    debugger
+    var value = e.innerText;
+    if (value == "[+]") {
+      e.innerText = " [-] "
+    } else {
+      e.innerText = " [+] "
     }
+    $("#filter").toggle();
+  }
 
-    $('#filterSearch').click(function(e) {
-        debugger;
-        e.preventDefault();
-        let data = $('#filter_form').serializeArray()
-        console.log(data);
-        // $.ajax({url:"/employee/FilterSearch",})
-        $.ajax({
-          url:"employee/FilterSearch",
-          data: data,
-          type: "post",
-          success: function (result){
-            $('#employee_table').html(result);
-            // console.log(result);
-          }
-        });
-    })
+  $('#filterSearch').click(function (e) {
+    debugger;
+    e.preventDefault();
+    let data = $('#filter_form').serializeArray()
+    console.log(data);
+    // $.ajax({url:"/employee/FilterSearch",})
+    $.ajax({
+      url: "employee/FilterSearch",
+      data: data,
+      type: "post",
+      success: function (result) {
+        $('#employee_table').html(result);
+        // console.log(result);
+      }
+    });
+  })
 
 
 </script>

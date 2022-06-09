@@ -1,4 +1,5 @@
 using ExcelManipulation.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace ExcelManipulation.Services;
 public interface IDataManipulationService
@@ -8,6 +9,7 @@ public interface IDataManipulationService
     Export ExcelExport(List<string> row, List<string> column);
     Export CsvExport(List<string> row, List<string> column);
     Export PdfExport(List<string> row, List<string> column);
+    public Task<List<SelectListItem>> ImporterDD();
 
 
 }
