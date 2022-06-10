@@ -1,3 +1,4 @@
+using System.Text;
 using ExcelManipulation.Data;
 using ExcelManipulation.Models;
 using Microsoft.EntityFrameworkCore;
@@ -18,8 +19,29 @@ public class EmployeeDBService : IEmployeeDBService
         return employee!;
     }
 
+    public async Task AddDummyData()
+    {
+        Employee emp = new Employee{
+            DateOfBirth = DateTime.MaxValue,
+            Designation = "Owner",
+            FullName = "Ram Parsad",
+            Gender = "Male",
+            Salary = 100000,
+            Photo = new Photo{
+                Bytes = Encoding.ASCII.GetBytes("Hello world, Not an image though"),
+                Description = "Hello world, Not an image though",
+                FileExtension = ".txt",
+                Size = Encoding.ASCII.GetBytes("Hello world, Not an image though").Length
+            }
+        };
+        await _dbContext.Employees.AddAsync(emp);
+        await _dbContext.SaveChangesAsync();
+
+    }
+
     public async Task<EmployeeResponse> GetAllEmployees(Filter filter)
     {
+        // await AddDummyData();
         List<Employee> employees = await _dbContext.Employees.ToListAsync();
         if (filter == null) filter = new Filter();
         else if (filter.RequireFIlter)

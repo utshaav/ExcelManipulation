@@ -24,6 +24,8 @@ public class Employee
     [Required]
     public DateTime DateOfBirth { get; set; }
 
+    public Photo Photo { get; set; }
+
     public DateTime ImportedDate { get; set; } = DateTime.Now;
     public Guid ImportedBy { get; set; }
 }

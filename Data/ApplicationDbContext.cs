@@ -13,4 +13,5 @@ public class ApplicationDbContext : IdentityDbContext
     }
 
     public DbSet<Employee> Employees { get; set; }
+    public DbSet<Photo> Photoes { get; set; }
 }
