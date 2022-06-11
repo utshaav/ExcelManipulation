@@ -1,5 +1,5 @@
-@model Employee
-<form asp-controller="Employee" asp-action="Update" method="post">
+@model EmployeeViewData
+<form asp-controller="Employee" asp-action="Update" method="post" enctype="multipart/form-data">
     <div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLongTitle">Update Employee</h5>
@@ -13,6 +13,8 @@
                     <span class="text-danger">Please correct the following errors</span>
                 </div>
                 <input asp-for="Id" type="hidden" />
+                <input asp-for="Photo.Id" type="hidden" />
+                <img src="@ViewBag.Photo">
                 <div class="form-group">
                     <label asp-for="FullName"></label>
                     <input asp-for="FullName" type="text" class="form-control w-100" placeholder="Utsav Kuinkel">
@@ -40,6 +42,11 @@
                     <label asp-for="Salary"></label>
                     <input asp-for="Salary" type="number" class="form-control" placeholder="20000">
                 </div>
+
+                <div class="form-group">
+                    <label asp-for="FormImage"></label>
+                    <input asp-for="FormImage" name="FormImage" type="file" accept="image/*" class="form-control">
+                </div>
             </div>
         </div>
         <div class="modal-footer">
@@ -49,5 +56,5 @@
                 asp-action="Index">Close</button>
         </div>
     </div>
-    
+
 </form>

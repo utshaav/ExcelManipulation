@@ -12,4 +12,5 @@ public interface IEmployeeDBService
     List<Employee> GetAllEmployees();
     Employee GetEmployee(Guid employeeId);
     Task<int> UpdateEmployee(Employee employee);
+    Task<int> UpdatePhoto(Photo photo);
 }

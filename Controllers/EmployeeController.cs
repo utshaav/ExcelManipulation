@@ -33,8 +33,9 @@ public class EmployeeController : Controller
     [HttpGet]
     public async Task<IActionResult> Index(int? page, bool redirected = false)
     {
-        Filter filter = new Filter{
-            PageNo = page??=1,
+        Filter filter = new Filter
+        {
+            PageNo = page ??= 1,
             RequireFIlter = false,
         };
 
@@ -64,9 +65,9 @@ public class EmployeeController : Controller
     public async Task<IActionResult> ImportFile([FromForm] IFormFile postedFile)
     {
         string message = string.Empty;
-        var userId =  User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         ExcelParseResult result = postedFile.FileName.Contains(".csv")
-                ?  _dataManipulation.ParseCsv(postedFile, userId)
+                ? _dataManipulation.ParseCsv(postedFile, userId)
                 : _dataManipulation.ParseExcel(postedFile, userId);
 
         if (result.Success)
@@ -102,19 +103,70 @@ public class EmployeeController : Controller
     [HttpGet]
     public IActionResult Update(Guid Id)
     {
-        var employee = _employeeDB.GetEmployee(Id);
+        var emp = _employeeDB.GetEmployee(Id);
+        EmployeeViewData employee = new EmployeeViewData
+        {
+            DateOfBirth = emp.DateOfBirth,
+            Designation = emp.Designation,
+            FullName = emp.FullName,
+            Id = emp.Id,
+            Gender = emp.Gender,
+            Photo = emp.Photo,
+            Salary = emp.Salary,
+            ImportedBy = emp.ImportedBy,
+            ImportedDate = emp.ImportedDate
+        };
+        if (employee.Photo != null && employee.Photo.Bytes != null)
+        {
+            ViewBag.Photo = $"data:{employee.Photo.FileExtension};base64,{Convert.ToBase64String(employee.Photo.Bytes)}";
+        }
+        else
+        {
+            ViewBag.Photo = "image/noimage.jpg";
+        }
         return PartialView(employee);
     }
     [HttpPost]
-    public IActionResult Update(Employee employe)
+    public IActionResult Update([FromForm] EmployeeViewData employe)
     {
-        _employeeDB.UpdateEmployee(employe);
+        Console.WriteLine("===============================================");
+        Console.WriteLine(employe.FormImage);
+        Console.WriteLine("===============================================");
+        if (employe.FormImage != null)
+        {
+            using (var ms = new MemoryStream())
+            {
+                employe.FormImage.CopyTo(ms);
+                var fileBytes = ms.ToArray();
+                Photo photo = new Photo
+                {
+                    Bytes = fileBytes,
+                    Size = fileBytes.Length,
+                    FileExtension = employe.FormImage.ContentType,
+                    EmployeeId = employe.Id
+                };
+                if (employe.Photo.Id != 0)
+                {
+                    photo.Id = employe.Photo.Id;
+                    _employeeDB.UpdatePhoto(photo);
+                }
+                else
+                {
+                    employe.Photo = photo;
+                }
+                // act on the Base64 data
+            }
+
+        }
+        Employee emp = employe;
+        _employeeDB.UpdateEmployee(emp);
         TempData["Message"] = $"{employe.FullName} updated succesfully";
         return RedirectToAction("Index", new { redirected = true });
     }
     [HttpGet]
-    public IActionResult ExportChoice(){
-        List<string> options = new List<string>{"excel", "csv", "pdf"};
+    public IActionResult ExportChoice()
+    {
+        List<string> options = new List<string> { "excel", "csv", "pdf" };
         return PartialView(options);
     }
 
@@ -122,13 +174,13 @@ public class EmployeeController : Controller
     public async Task<IActionResult> Download(List<string> excel_row, List<string> excel_column, string fileType)
     {
         Console.WriteLine(fileType);
-        Export result = new ();
-        if(fileType.ToLower() == "excel")
-        result = _dataManipulation.ExcelExport(excel_row, excel_column);
-        else if(fileType.ToLower() == "csv")
-        result = _dataManipulation.CsvExport(excel_row, excel_column);
-        else if(fileType.ToLower() == "pdf")
-        result = await _dataManipulation.PdfExportAsync(excel_row, excel_column, HttpContext);
+        Export result = new();
+        if (fileType.ToLower() == "excel")
+            result = _dataManipulation.ExcelExport(excel_row, excel_column);
+        else if (fileType.ToLower() == "csv")
+            result = _dataManipulation.CsvExport(excel_row, excel_column);
+        else if (fileType.ToLower() == "pdf")
+            result = await _dataManipulation.PdfExportAsync(excel_row, excel_column, HttpContext);
 
 
         string fileName = $"myfile-{DateTime.Now.ToShortDateString()}{result.Extension}";
@@ -155,7 +207,7 @@ public class EmployeeController : Controller
     public async Task<IActionResult> FilterSearch(Filter filter)
     {
         EmployeeResponse response = await _employeeDB.GetAllEmployees(filter);
-        return PartialView("_EmployeeTable",response);
+        return PartialView("_EmployeeTable", response);
     }
 
 

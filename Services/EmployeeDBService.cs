@@ -16,6 +16,7 @@ public class EmployeeDBService : IEmployeeDBService
     public Employee GetEmployee(Guid employeeId)
     {
         var employee = _dbContext.Employees.Where(x => x.Id == employeeId).FirstOrDefault();
+        GetPhoto(employeeId);
         return employee!;
     }
 
@@ -37,6 +38,10 @@ public class EmployeeDBService : IEmployeeDBService
         await _dbContext.Employees.AddAsync(emp);
         await _dbContext.SaveChangesAsync();
 
+    }
+
+    public void GetPhoto(Guid id){
+        var x = _dbContext.Photoes.Where(x => x.employee.Id == id).ToList();
     }
 
     public async Task<EmployeeResponse> GetAllEmployees(Filter filter)
@@ -164,5 +169,12 @@ public class EmployeeDBService : IEmployeeDBService
         var employees = _dbContext.Employees.ToList();
         _dbContext.Employees.RemoveRange(employees);
         _dbContext.SaveChanges();
+    }
+
+    public async Task<int> UpdatePhoto(Photo photo)
+    {
+         _dbContext.Photoes.Attach(photo);
+        _dbContext.Photoes.Update(photo);
+        return await _dbContext.SaveChangesAsync();
     }
 }
