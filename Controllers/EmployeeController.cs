@@ -208,11 +208,13 @@ public class EmployeeController : Controller
 
     #region Add Employee
     [HttpGet]
+    [Authorize(Roles = "Admin")]
     public IActionResult Add()
     {
         return PartialView(new EmployeeViewData());
     }
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public IActionResult Add([FromForm] EmployeeViewData employe)
     {
         using (var ms = new MemoryStream())

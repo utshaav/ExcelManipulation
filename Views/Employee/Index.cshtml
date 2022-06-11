@@ -60,6 +60,9 @@
       success: function (res) {
         $('#modal-content').html(res);
         $('#exampleModalCenter').modal("show");
+      },
+      error: function (e) {
+        alert("You are not authorized to use this function");
       }
     })
   });
