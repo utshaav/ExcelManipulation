@@ -41,6 +41,8 @@ public class DataManipulationService : IDataManipulationService
         _employeeDb = employeeDb;
 
     }
+
+    #region Import
     public ExcelParseResult ParseExcel(IFormFile file, string userId)
     {
         List<Employee> employees = new List<Employee>();
@@ -109,46 +111,55 @@ public class DataManipulationService : IDataManipulationService
         return new ExcelParseResult { Employees = employees, EmptyRows = emptyRows };
     }
 
-    // public async Task<ExcelParseResult> ParseCsvAsync(IFormFile file)
-    // {
-    //     // using var memoryStream = new MemoryStream(new byte[file.Length]);
-    //     // await file.CopyToAsync(memoryStream);
-    //     // memoryStream.Position = -1;
+    public ExcelParseResult ParseCsv(IFormFile file, string userId)
+    {
+        CsvParserOptions csvParserOptions = new CsvParserOptions(true, ',');
+        List<Employee> employees = new List<Employee>();
+        CsvEmployeeMapping csvMapper = new CsvEmployeeMapping();
+        CsvParser<EmployeeMappingHelper> csvParser = new CsvParser<EmployeeMappingHelper>(csvParserOptions, csvMapper);
+        var result = csvParser
+                     .ReadFromStream(file.OpenReadStream(), Encoding.ASCII)
+                     .ToList();
 
-    //     using (var reader = new StreamReader(file.OpenReadStream()))
-    //     using (var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture))
-    //     {
-    //         List<Employee> list = new();
-    //         csvReader.Read();
-    //         var records = csvReader.GetRecords<dynamic>().ToList();
-    //         Console.WriteLine(records);
-    //         foreach (var record in records)
-    //         {
-    //             Console.WriteLine(record);
-    //             foreach(var furtherRecord in record){
+        Console.WriteLine("Name " + "ID   " + "City  " + "Country");
+        foreach (var details in result)
+        {
+            if (details.IsValid)
+            {
+                DateTime dob = DateTime.MinValue;
+                if (details.Result.DOB != null)
+                {
+                    dob = DateTime.Parse(details.Result.DOB, CultureInfo.InvariantCulture);
+                }
+                Employee employee = new Employee
+                {
+                    Salary = details.Result.Salary,
+                    Designation = details.Result.Designation,
+                    FullName = details.Result.FullName,
+                    Gender = details.Result.Gender,
+                    DateOfBirth = dob,
+                    ImportedBy = Guid.Parse(userId)
+                };
+                employees.Add(employee);
+            }
+            else
+            {
+                if (details.RowIndex != 1)
+                {
+                    return new ExcelParseResult
+                    {
+                        Success = false,
+                        ErrorMessage = details.Error.Value,
+                    };
+                }
+            }
+        }
 
-    //             }
-    //             // if(record == null) continue;
-    //             // Employee emp = new Employee{
-    //             //     DateOfBirth = record.DateOfBirth,
-    //             //     FullName = record.FullName,
-    //             //     Salary = record.Salary,
-    //             //     Gender = record.Gender,
-    //             //     Designation = record.Designation
-    //             // };
-    //             // list.Add(emp);
-    //         }
-    //         return new ExcelParseResult
-    //         {
-    //             Employees = list,
-    //             EmptyRows = new List<int>()
-    //         };
-    //     }
+        return new ExcelParseResult { Employees = employees, EmptyRows = new List<int>() };
+    }
+    #endregion
 
-    //     return new ExcelParseResult();
-    // }
-
-
+    #region Export
     public Export ExcelExport(List<string> row, List<string> column)
     {
         List<Employee> employees = new();
@@ -366,52 +377,48 @@ public class DataManipulationService : IDataManipulationService
             Extension = ".pdf"
         };
     }
-    public ExcelParseResult ParseCsv(IFormFile file, string userId)
-    {
-        CsvParserOptions csvParserOptions = new CsvParserOptions(true, ',');
-        List<Employee> employees = new List<Employee>();
-        CsvEmployeeMapping csvMapper = new CsvEmployeeMapping();
-        CsvParser<EmployeeMappingHelper> csvParser = new CsvParser<EmployeeMappingHelper>(csvParserOptions, csvMapper);
-        var result = csvParser
-                     .ReadFromStream(file.OpenReadStream(), Encoding.ASCII)
-                     .ToList();
 
-        Console.WriteLine("Name " + "ID   " + "City  " + "Country");
-        foreach (var details in result)
-        {
-            if (details.IsValid)
-            {
-                DateTime dob = DateTime.MinValue;
-                if(details.Result.DOB != null){
-                   dob = DateTime.Parse(details.Result.DOB, CultureInfo.InvariantCulture);
-                }
-                Employee employee = new Employee
-                {
-                    Salary = details.Result.Salary,
-                    Designation = details.Result.Designation,
-                    FullName = details.Result.FullName,
-                    Gender = details.Result.Gender,
-                    DateOfBirth = dob,
-                    ImportedBy = Guid.Parse(userId)
-                };
-                employees.Add(employee);
-            }
-            else
-            {
-                if (details.RowIndex != 1)
-                {
-                    return new ExcelParseResult
-                    {
-                        Success = false,
-                        ErrorMessage = details.Error.Value,
-                    };
-                }
-            }
-        }
+    #endregion
 
-        return new ExcelParseResult { Employees = employees, EmptyRows = new List<int>() };
-    }
+    // public async Task<ExcelParseResult> ParseCsvAsync(IFormFile file)
+    // {
+    //     // using var memoryStream = new MemoryStream(new byte[file.Length]);
+    //     // await file.CopyToAsync(memoryStream);
+    //     // memoryStream.Position = -1;
 
+    //     using (var reader = new StreamReader(file.OpenReadStream()))
+    //     using (var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture))
+    //     {
+    //         List<Employee> list = new();
+    //         csvReader.Read();
+    //         var records = csvReader.GetRecords<dynamic>().ToList();
+    //         Console.WriteLine(records);
+    //         foreach (var record in records)
+    //         {
+    //             Console.WriteLine(record);
+    //             foreach(var furtherRecord in record){
+
+    //             }
+    //             // if(record == null) continue;
+    //             // Employee emp = new Employee{
+    //             //     DateOfBirth = record.DateOfBirth,
+    //             //     FullName = record.FullName,
+    //             //     Salary = record.Salary,
+    //             //     Gender = record.Gender,
+    //             //     Designation = record.Designation
+    //             // };
+    //             // list.Add(emp);
+    //         }
+    //         return new ExcelParseResult
+    //         {
+    //             Employees = list,
+    //             EmptyRows = new List<int>()
+    //         };
+    //     }
+
+    //     return new ExcelParseResult();
+    // }
+    #region Dropdown
     public async Task<List<SelectListItem>> ImporterDD()
     {
         List<SelectListItem> res = new List<SelectListItem>();
@@ -424,7 +431,10 @@ public class DataManipulationService : IDataManipulationService
 
         return res;
     }
+    #endregion
 
+
+    #region Helper Class for CSV import
     private class CsvEmployeeMapping : CsvMapping<EmployeeMappingHelper>
     {
         public CsvEmployeeMapping()
@@ -443,4 +453,5 @@ public class DataManipulationService : IDataManipulationService
     {
         public string? DOB { get; set; }
     }
+    #endregion
 }

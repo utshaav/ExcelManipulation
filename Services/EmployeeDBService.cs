@@ -13,35 +13,12 @@ public class EmployeeDBService : IEmployeeDBService
         _dbContext = dbContext;
     }
 
+    #region Employee Get
     public Employee GetEmployee(Guid employeeId)
     {
         var employee = _dbContext.Employees.Where(x => x.Id == employeeId).FirstOrDefault();
         GetPhoto(employeeId);
         return employee!;
-    }
-
-    public async Task AddDummyData()
-    {
-        Employee emp = new Employee{
-            DateOfBirth = DateTime.MaxValue,
-            Designation = "Owner",
-            FullName = "Ram Parsad",
-            Gender = "Male",
-            Salary = 100000,
-            Photo = new Photo{
-                Bytes = Encoding.ASCII.GetBytes("Hello world, Not an image though"),
-                Description = "Hello world, Not an image though",
-                FileExtension = ".txt",
-                Size = Encoding.ASCII.GetBytes("Hello world, Not an image though").Length
-            }
-        };
-        await _dbContext.Employees.AddAsync(emp);
-        await _dbContext.SaveChangesAsync();
-
-    }
-
-    public void GetPhoto(Guid id){
-        var x = _dbContext.Photoes.Where(x => x.employee.Id == id).ToList();
     }
 
     public async Task<EmployeeResponse> GetAllEmployees(Filter filter)
@@ -87,7 +64,7 @@ public class EmployeeDBService : IEmployeeDBService
             }
             if (filter.EndDate != DateTime.MinValue)
             {
-                
+
                 filter.EndDate = DateTime.Parse((filter.EndDate.AddDays(1)).ToShortDateString());
                 if (filter.DateType == "DOB")
                 {
@@ -134,6 +111,9 @@ public class EmployeeDBService : IEmployeeDBService
         return await _dbContext.SaveChangesAsync();
     }
 
+    #endregion
+
+    #region Employee Add Update Delete
     public async Task<int> AddEmployee(List<Employee> employees)
     {
         int i;
@@ -170,11 +150,45 @@ public class EmployeeDBService : IEmployeeDBService
         _dbContext.Employees.RemoveRange(employees);
         _dbContext.SaveChanges();
     }
+    #endregion
 
+    #region Photo Update
     public async Task<int> UpdatePhoto(Photo photo)
     {
-         _dbContext.Photoes.Attach(photo);
+        _dbContext.Photoes.Attach(photo);
         _dbContext.Photoes.Update(photo);
         return await _dbContext.SaveChangesAsync();
     }
+    #endregion
+
+    #region Other
+    public async Task AddDummyData()
+    {
+        Employee emp = new Employee
+        {
+            DateOfBirth = DateTime.MaxValue,
+            Designation = "Owner",
+            FullName = "Ram Parsad",
+            Gender = "Male",
+            Salary = 100000,
+            Photo = new Photo
+            {
+                Bytes = Encoding.ASCII.GetBytes("Hello world, Not an image though"),
+                Description = "Hello world, Not an image though",
+                FileExtension = ".txt",
+                Size = Encoding.ASCII.GetBytes("Hello world, Not an image though").Length
+            }
+        };
+        await _dbContext.Employees.AddAsync(emp);
+        await _dbContext.SaveChangesAsync();
+
+    }
+
+    public void GetPhoto(Guid id)
+    {
+        var x = _dbContext.Photoes.Where(x => x.employee.Id == id).ToList();
+    }
+    #endregion
+
+
 }
