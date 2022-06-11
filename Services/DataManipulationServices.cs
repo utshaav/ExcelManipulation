@@ -68,7 +68,7 @@ public class DataManipulationService : IDataManipulationService
                             continue;
                         }
                         bool isCellEmpty = cellRange.Any(c => string.IsNullOrEmpty(c.GetValue<string>()));
-                        
+
                         // return new ExcelParseResult
                         // {
                         //     Success = false,
@@ -340,18 +340,20 @@ public class DataManipulationService : IDataManipulationService
             };
             var actionContext = new ActionContext(httpCtx, new RouteData(), new ActionDescriptor());
             var view = _viewEngine.FindView(actionContext, "_PdfExport", false);
-            Console.WriteLine(view);
-            var vieDictionary = new ViewDataDictionary<List<Employee>>(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+            if (view.View != null)
             {
-                Model = employees
-            };
-            var tempData = new TempDataDictionary(httpCtx, _tempData);
-            var viewContext = new ViewContext(actionContext, view.View, vieDictionary, tempData, sw, new HtmlHelperOptions());
-            await view.View.RenderAsync(viewContext);
+                var vieDictionary = new ViewDataDictionary<List<Employee>>(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+                {
+                    Model = employees
+                };
+                var tempData = new TempDataDictionary(httpCtx, _tempData);
+                var viewContext = new ViewContext(actionContext, view.View, vieDictionary, tempData, sw, new HtmlHelperOptions());
+                await view.View.RenderAsync(viewContext);
+            }
             viewAsHtml = sw.ToString();
         }
 
-        string htmlText = "<h1> This is Sample Pdf file</h1> <p> This is the demo for Csharp Created Pdf using IronPdf </p> <p> IronPdf is a library which provides build in functions for creating, reading <br> and manuplating pdf files with just few lines of code. </p>";
+        // string htmlText = "<h1> This is Sample Pdf file</h1> <p> This is the demo for Csharp Created Pdf using IronPdf </p> <p> IronPdf is a library which provides build in functions for creating, reading <br> and manuplating pdf files with just few lines of code. </p>";
         var HtmlLine = new HtmlToPdf();
         var pdfDoc = HtmlLine.ConvertHtmlString(viewAsHtml);
         file = pdfDoc.Save();
@@ -379,8 +381,10 @@ public class DataManipulationService : IDataManipulationService
         {
             if (details.IsValid)
             {
-                DateTime dob = DateTime.Parse(details.Result.DOB, CultureInfo.InvariantCulture);
-                Console.WriteLine(dob);
+                DateTime dob = DateTime.MinValue;
+                if(details.Result.DOB != null){
+                   dob = DateTime.Parse(details.Result.DOB, CultureInfo.InvariantCulture);
+                }
                 Employee employee = new Employee
                 {
                     Salary = details.Result.Salary,
@@ -437,6 +441,6 @@ public class DataManipulationService : IDataManipulationService
 
     private class EmployeeMappingHelper : Employee
     {
-        public string DOB { get; set; }
+        public string? DOB { get; set; }
     }
 }

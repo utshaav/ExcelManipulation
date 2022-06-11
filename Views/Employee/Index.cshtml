@@ -15,7 +15,7 @@
 <div class="container d-print-none">
   <div class="row justify-content-between">
     <h3>List of Employee (@ViewBag.Count)</h3>
-    @if (User.Identity.IsAuthenticated)
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
     {
       <div class="col-md-6">
         <button type="button" class="btn btn-primary w-100 m-b-10" id="add-btn">
@@ -39,16 +39,6 @@
   <partial name=_EmployeeTable.cshtml model=@Model></partial>
 </div>
 
-
-
-
-<script src="~/lib/jquery/dist/jquery.js"></script>
-<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-<script src="~/lib/jquery/dist/jquery.min.js"></script>
-@* <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.jquery.validation.unobtrusive.min.js"></script>
-  <script src="~/lib/jquery/dist/jquery.js"></script>
-  <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script> *@
-<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 
 <script>
 

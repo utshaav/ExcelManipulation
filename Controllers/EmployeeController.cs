@@ -53,6 +53,7 @@ public class EmployeeController : Controller
         return View(employees);
     }
 
+    #region  Import File
     [HttpGet]
     [Authorize(Roles = "Admin")]
     public IActionResult ImportFile()
@@ -92,14 +93,9 @@ public class EmployeeController : Controller
         return RedirectToAction("Index", new { page = 1, redirected = true });
     }
 
+    #endregion
 
-    [HttpGet]
-    public IActionResult ClearEmployeeTable()
-    {
-        _employeeDB.DeleteAllEmployees();
-        return RedirectToAction("Index");
-    }
-
+    #region Update Employee
     [HttpGet]
     public IActionResult Update(Guid Id)
     {
@@ -163,6 +159,10 @@ public class EmployeeController : Controller
         TempData["Message"] = $"{employe.FullName} updated succesfully";
         return RedirectToAction("Index", new { redirected = true });
     }
+
+    #endregion
+
+    #region Export File
     [HttpGet]
     public IActionResult ExportChoice()
     {
@@ -187,7 +187,9 @@ public class EmployeeController : Controller
         // string fileName = "myfile.csv";
         return File(result.File, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
     }
+    #endregion
 
+    #region Delete Employee
     [HttpGet]
     public IActionResult Delete(Guid id)
     {
@@ -202,13 +204,54 @@ public class EmployeeController : Controller
         TempData["Message"] = "Deleted Succesfully";
         return RedirectToAction("Index", new { redirected = true });
     }
+    #endregion
 
+    #region Add Employee
+    [HttpGet]
+    public IActionResult Add()
+    {
+        return PartialView(new EmployeeViewData());
+    }
+    [HttpPost]
+    public IActionResult Add([FromForm] EmployeeViewData employe)
+    {
+        using (var ms = new MemoryStream())
+        {
+            employe.FormImage.CopyTo(ms);
+            var fileBytes = ms.ToArray();
+            Photo photo = new Photo
+            {
+                Bytes = fileBytes,
+                Size = fileBytes.Length,
+                FileExtension = employe.FormImage.ContentType,
+                EmployeeId = employe.Id
+            };
+            employe.Photo = photo;
+        }
+        Employee emp = employe;
+        _employeeDB.AddEmployee(emp);
+        TempData["Message"] = $"{employe.FullName} Added succesfully";
+        return RedirectToAction("Index", new { redirected = true });
+    }
+
+    #endregion
+
+
+    #region Others
     [HttpPost]
     public async Task<IActionResult> FilterSearch(Filter filter)
     {
         EmployeeResponse response = await _employeeDB.GetAllEmployees(filter);
         return PartialView("_EmployeeTable", response);
     }
+
+    [HttpGet]
+    public IActionResult ClearEmployeeTable()
+    {
+        _employeeDB.DeleteAllEmployees();
+        return RedirectToAction("Index");
+    }
+    #endregion
 
 
 }

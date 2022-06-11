@@ -1,8 +1,8 @@
 @model EmployeeViewData
-<form asp-controller="Employee" asp-action="Update" method="post" enctype="multipart/form-data">
+<form asp-controller="Employee" asp-action="Add" method="post" enctype="multipart/form-data">
     <div class="modal-content">
         <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLongTitle">Update Employee</h5>
+            <h5 class="modal-title" id="exampleModalLongTitle">Add Employee</h5>
             <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
@@ -12,9 +12,6 @@
                 <div asp-validation-summary="ModelOnly">
                     <span class="text-danger">Please correct the following errors</span>
                 </div>
-                <input asp-for="Id" type="hidden" />
-                <input asp-for="Photo.Id" type="hidden" />
-                <img src="@ViewBag.Photo" style="height: 200px;">
                 <div class="form-group">
                     <label asp-for="FullName"></label>
                     <input asp-for="FullName" type="text" class="form-control w-100" placeholder="Utsav Kuinkel">
