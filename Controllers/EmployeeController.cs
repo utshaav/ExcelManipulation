@@ -215,25 +215,31 @@ public class EmployeeController : Controller
     }
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public IActionResult Add([FromForm] EmployeeViewData employe)
+    public async Task<IActionResult> AddAsync([FromForm] EmployeeViewData employe)
     {
-        using (var ms = new MemoryStream())
+        if (ModelState.IsValid)
         {
-            employe.FormImage.CopyTo(ms);
-            var fileBytes = ms.ToArray();
-            Photo photo = new Photo
+            using (var ms = new MemoryStream())
             {
-                Bytes = fileBytes,
-                Size = fileBytes.Length,
-                FileExtension = employe.FormImage.ContentType,
-                EmployeeId = employe.Id
-            };
-            employe.Photo = photo;
+                employe.FormImage.CopyTo(ms);
+                var fileBytes = ms.ToArray();
+                Photo photo = new Photo
+                {
+                    Bytes = fileBytes,
+                    Size = fileBytes.Length,
+                    FileExtension = employe.FormImage.ContentType,
+                    EmployeeId = employe.Id
+                };
+                employe.Photo = photo;
+            }
+            Employee emp = employe;
+            await _employeeDB.AddEmployee(emp);
+            TempData["Message"] = $"{employe.FullName} Added succesfully";
+            return RedirectToAction("Index", new { redirected = true });
         }
-        Employee emp = employe;
-        _employeeDB.AddEmployee(emp);
-        TempData["Message"] = $"{employe.FullName} Added succesfully";
-        return RedirectToAction("Index", new { redirected = true });
+
+        return View(employe);
+
     }
 
     #endregion

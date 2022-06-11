@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ExcelManipulation.Data;
 using ExcelManipulation.Services;
+using ExcelManipulation.Enums;
 
 var builder = WebApplication.CreateBuilder(args);
 // var connectionString = builder.Configuration.GetConnectionString("AppDbContextConnection") ?? throw new InvalidOperationException("Connection string 'AppDbContextConnection' not found.");
@@ -22,11 +23,11 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
-builder.Services.AddScoped<IEmployeeDBService,EmployeeDBService>();
-builder.Services.AddScoped<IDataManipulationService,DataManipulationService>();
+builder.Services.AddScoped<IEmployeeDBService, EmployeeDBService>();
+builder.Services.AddScoped<IDataManipulationService, DataManipulationService>();
 
 var app = builder.Build();
-
+await SeedDatabase();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -53,3 +54,16 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 app.Run();
+
+async Task SeedDatabase() 
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var _roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        if (!await _roleManager.RoleExistsAsync(Roles.Admin.ToString()))
+        {
+            await _roleManager.CreateAsync(new IdentityRole(Roles.Admin.ToString()));
+            await _roleManager.CreateAsync(new IdentityRole(Roles.Default.ToString()));
+        }
+    }
+}

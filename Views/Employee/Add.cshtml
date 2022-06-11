@@ -15,13 +15,13 @@
                 <div class="form-group">
                     <label asp-for="FullName"></label>
                     <input asp-for="FullName" type="text" class="form-control w-100" placeholder="Utsav Kuinkel">
-                    <span asp-validation-for="FullName" class="text-danger"></span>
+                    <span asp-validation-for="FullName" class="text-danger" required></span>
                 </div>
 
                 <div class="form-group">
                     <label asp-for="Designation"></label>
                     <input type="text" class="form-control" asp-for="Designation">
-                    <span asp-validation-for="Designation"></span>
+                    <span asp-validation-for="Designation" class="text-danger" required></span>
                     @* <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone
                         else.</small>
                     *@
@@ -29,21 +29,23 @@
                 <div class="form-group">
                     <label asp-for="Gender"></label>
                     <input type="text" asp-for="Gender" class="form-control" placeholder="Gender">
-                    <span asp-validation-for="Gender"></span>
+                    <span asp-validation-for="Gender" class="text-danger" required></span>
                 </div>
                 <div class="form-group">
                     <label asp-for="DateOfBirth"></label>
                     <input asp-for="DateOfBirth" type="date" class="form-control" placeholder="04/04/2022">
+                    <span asp-validation-for="DateOfBirth" class="text-danger" required></span>
                 </div>
                 <div class="form-group">
                     <label asp-for="Salary"></label>
                     <input asp-for="Salary" type="number" class="form-control" placeholder="20000">
+                    <span asp-validation-for="Salary" class="text-danger" required></span>
                 </div>
 
                 <div class="form-group">
                     <label asp-for="FormImage"></label>
                     <input id="FormImage" asp-for="FormImage" name="FormImage" type="file" accept="image/*"
-                        class="form-control">
+                        class="form-control" required>
                 </div>
             </div>
         </div>
