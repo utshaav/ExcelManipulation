@@ -215,7 +215,7 @@ public class EmployeeController : Controller
     [Authorize(Roles = "Admin")]
     public IActionResult Add()
     {
-        return PartialView(new EmployeeViewData());
+        return PartialView(new EmployeeViewData{DateOfBirth = DateTime.Now});
     }
     [HttpPost]
     [Authorize(Roles = "Admin")]
