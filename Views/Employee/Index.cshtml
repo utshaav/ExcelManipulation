@@ -7,8 +7,12 @@
     Print this page
   </button>
 </div>
-<span id="data_message" message=@ViewBag.Message style="display: none;">@ViewBag.Message</span>
-<span id="data_redirected" message=@ViewBag.Message style="display: none;">@ViewBag.Redirected</span>
+<div class="alert alert-warning alert-dismissible fade" role="alert">
+  <strong>@ViewBag.Message</strong>
+  <button type="button" class="btn-close" data-bs-dismiss="alert"  aria-label="Close"></button>
+</div>
+<span id="data_message" message=@ViewBag.Message style="display: none;"></span>
+<span id="data_redirected" message=@ViewBag.Message style="display: none;"></span>
 <div style="height:20px; width:100%; clear:both;"></div>
 
 
@@ -38,17 +42,19 @@
 <div id="employee_table">
   <partial name=_EmployeeTable.cshtml model=@Model></partial>
 </div>
-
-
 <script>
 
   $(document).ready(function () {
     debugger;
-    var redirected = $('#data_redirected').html();
-    if (redirected === "True") {
-      var message = $('#data_message').html();
-      alert(message);
+    if("@ViewBag.Redirected" === "True"){
+      $(".alert").addClass("show");
     }
+    var alertNode = document.querySelector('.alert')
+    var alert = bootstrap.Alert.getInstance(alertNode)
+    setTimeout(function () {
+      $(".alert").alert('close')
+    }, 7000); console.log('before');
+
   })
 
   $('#add-btn').click(function () {

@@ -39,7 +39,7 @@ public class EmployeeController : Controller
             RequireFIlter = false,
         };
 
-        @ViewBag.ImporterDD = await _dataManipulation.ImporterDD();
+        ViewBag.ImporterDD = await _dataManipulation.ImporterDD();
 
         Console.WriteLine(User.FindFirstValue(ClaimTypes.NameIdentifier));
         if (redirected && TempData["Message"] != null)
@@ -77,11 +77,15 @@ public class EmployeeController : Controller
             message = "Imported succesfully.";
             if (result.EmptyRows.Count > 0)
             {
-                message += "These rows were empty :";
+                var emptyRows = string.Empty;
+                var first = true;
                 foreach (int i in result.EmptyRows)
                 {
-                    message += $" {i},";
+                    if(!first) emptyRows += ",";
+                    emptyRows += i.ToString();
+                    first = false;
                 }
+                message = $"X rows [{emptyRows}] were skipped since they did not have data";
             }
         }
         else

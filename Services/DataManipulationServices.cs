@@ -76,7 +76,25 @@ public class DataManipulationService : IDataManipulationService
                         //     Success = false,
                         //     ErrorMessage = $"Import failed because row {i} have a empty cell."
                         // };
+                        try
+                        {
+                            float.Parse(worksheet.Cells[i, 4].GetCellValue<string>());
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            throw new Exception($"Import failed because in row {i}, The format for salary is incorrect");
+                        }
 
+                        try
+                        {
+                            DateTime.Parse(worksheet.Cells[i, 5].GetValue<string>());
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            throw new Exception($"Import failed because in row {i}, The format for date of birth is incorrect");
+                        }
 
                         var date = worksheet.Cells[i, 5].GetValue<DateTime>();
                         employee.FullName = worksheet.Cells[i, 1].GetValue<string>();

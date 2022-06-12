@@ -76,7 +76,6 @@ public class EmployeeDBService : IEmployeeDBService
                     employees = employees.Where(x => x.ImportedDate <= filter.EndDate).ToList();
 
                 }
-
             }
             if (filter.ImportedBy != Guid.Empty)
             {
@@ -119,6 +118,7 @@ public class EmployeeDBService : IEmployeeDBService
         int i;
         foreach (var employee in employees)
         {
+            employee.Id = Guid.NewGuid();
             i = await AddEmployee(employee);
             if (i == 0)
             {

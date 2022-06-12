@@ -6,10 +6,12 @@
   int previousPage = Model.CurrentPage - 1;
   int nextPage = Model.CurrentPage + 1;
 }
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/dt-1.12.1/datatables.min.css"/>
+
 <form id="download" asp-action="Download" method="post">
   <input name="fileType" id="export_type" hidden>
   <input name="CurrentPage" value="@Model.CurrentPage" hidden>
-  <table class="table table-hover m-t-20">
+  <table id="actual_employee_table" class="table table-hover m-t-20">
         <thead class="thead-light">
       <tr>
         <th scope="col"># <input class="d-print-none" type="checkbox" id="select_all"></th>
@@ -51,43 +53,72 @@
         <td>No data!!</td>
       }
 
-      <tr class="d-print-none">
-        <td colspan="6">
+     
+    </tbody>
+  </table>
+   <div class="d-print-none row">
+        <div class="col-md-9">
         @if(Model.Employees != null && Model.Employees.Count > 0 && Model.Pages > 1){
-          
+
           <nav aria-label="Page navigation">
             <ul class="pagination">
-              <li class="page-item">
-                <a class="page-link" href="employee?page=@previousPage" aria-label="Previous">
-                  <span aria-hidden="true">&laquo;</span>
+              
+                @if(@previousPage != 0){
+                  <li class="page-item">
+                  <a class="page-link" onclick="updatePageNumber(@previousPage)" href="javascript:void(0)" aria-label="Previous">
+                     <span aria-hidden="true">&laquo;</span>
+                </a>
+                </li>
+                }else{
+                  <li class="page-item disabled">
+                  <a class="page-link disabled" >
+                     <span aria-hidden="true">&laquo;</span>
                 </a>
               </li>
+
+                }
+                 
               @for (i = 1; i <= Model.Pages; i++)
               {
-                  <li class="page-item"><a class="page-link" href="employee?page=@i">@i</a></li>
+                  <li class="page-item"><a class="page-link" onclick="updatePageNumber(@i)" href="javascript:void(0)">@i</a></li>
               }
+                @if(@nextPage < @Model.Pages){
               <li class="page-item">
-                <a class="page-link" href="employee?page=@nextPage" aria-label="Next">
+
+                  <a class="page-link" href="javascript:void(0)" onclick="updatePageNumber(@nextPage)" aria-label="Next">
                   <span aria-hidden="true">&raquo;</span>
                 </a>
               </li>
+                }else{
+              <li class="page-item disabled">
+
+                  <a class="page-link disabled">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+
+                }
             </ul>
           </nav>
-        
+
         }
-        </td>
-        <td>
+        </div>
+        <div class="col-md-3">
           <button style="width: 180px;" type="button" id="export_file" class="btn btn-success">
             Export File
           </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+        </div>
+      </div>
 </form>
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
-<script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+@* <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script> *@
+<!-- #region datatables files -->
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs5/dt-1.12.1/datatables.min.js" defer></script>
+<!-- #endregion -->
 <script>
+  $(document).ready(function(){
+    $('#actual_employee_table').DataTable({ "paging": false, "info": false,"searching": false });
+  })
   $('#export_file').click(function (e) {
     debugger
     e.preventDefault();
@@ -102,4 +133,8 @@
     })
   });
 
+  function updatePageNumber(i){
+    $("#fliter_currentPage").val(i);
+    $("#filterSearch").trigger("click");
+  }
 </script>
