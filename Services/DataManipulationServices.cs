@@ -47,10 +47,7 @@ public class DataManipulationService : IDataManipulationService
     {
         List<Employee> employees = new List<Employee>();
         List<int> emptyRows = new List<int>();
-        var employee = new Employee();
-        //For validation
-        List<ValidationResult> results = new List<ValidationResult>();
-        ValidationContext context = new ValidationContext(employee, null, null);
+
         using (var package = new ExcelPackage(file.OpenReadStream()))
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -61,6 +58,10 @@ public class DataManipulationService : IDataManipulationService
                 {
                     try
                     {
+                        var employee = new Employee();
+                        //For validation
+                        List<ValidationResult> results = new List<ValidationResult>();
+                        ValidationContext context = new ValidationContext(employee, null, null);
                         var columnEnd = worksheet.Cells.End.Column;
                         var cellRange = worksheet.Cells[i, 1, i, columnEnd];
                         var isRowEmpty = cellRange.All(c => c.Value == null);
