@@ -1,5 +1,6 @@
 # Hosted
 * [Hosted in heroku](http://excelmanipulation.herokuapp.com/)
+* PDF export works in local but throws exception in hosted site
 
 ## Steps to perform before registering (Not needed now, roles are seeded)
 * [Hit this endpoint](https://localhost:7224/Role/CreateRole)
