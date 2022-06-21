@@ -3,8 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using ExcelManipulation.Data;
 using ExcelManipulation.Services;
 using ExcelManipulation.Enums;
+using System.Net;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions{
+    Args = args, 
+
+});
 // var connectionString = builder.Configuration.GetConnectionString("AppDbContextConnection") ?? throw new InvalidOperationException("Connection string 'AppDbContextConnection' not found.");
 
 // builder.Services.AddDbContext<AppDbContext>(options =>
@@ -25,6 +29,15 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IEmployeeDBService, EmployeeDBService>();
 builder.Services.AddScoped<IDataManipulationService, DataManipulationService>();
+var port = Environment.GetEnvironmentVariable("PORT");
+// builder.WebHost.UseUrls("http://*:" + port);
+builder.WebHost.UseKestrel(serverOptions => {
+    serverOptions.Listen(IPAddress.Any, Convert.ToInt32(port));
+});
+// builder.Host.ConfigureWebHostDefaults(webBuilder => {
+//     webBuilder.UseUrls("http://*:" + port);
+// });
+
 
 var app = builder.Build();
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
