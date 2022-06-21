@@ -14,9 +14,9 @@ var builder = WebApplication.CreateBuilder(args);
 //     .AddEntityFrameworkStores<AppDbContext>();;
 
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("UtsavPc");
+var connectionString = builder.Configuration.GetConnectionString("HerokuServer");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
@@ -27,6 +27,7 @@ builder.Services.AddScoped<IEmployeeDBService, EmployeeDBService>();
 builder.Services.AddScoped<IDataManipulationService, DataManipulationService>();
 
 var app = builder.Build();
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 await SeedDatabase();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
